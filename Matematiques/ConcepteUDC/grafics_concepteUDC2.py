@@ -95,7 +95,8 @@ class AplicacionEducativaGrafica2:
         self.model = ConcepteUDC2Model()
         self.columnas_x = [70, 440, 810]
         self.ancho_col, self.alto_pizarra, self.y_pizarra = 320, 360, 190
-        self.rect_boton = pygame.Rect(ANCHO_LOGICO // 2 - 150, ALTO_LOGICO - 85, 300, 60)
+        self.rect_boton = pygame.Rect(ANCHO_LOGICO // 2 - 175, ALTO_LOGICO - 85, 350, 60)
+        self.paso_explicacion = 0  # 0: Només número, 1: U/D/C, 2: Eq. Centenes, 3: Eq. Desenes
 
     def obtener_pos_raton_logica(self) -> tuple[int, int]:
         pos_real = pygame.mouse.get_pos()
@@ -104,6 +105,13 @@ class AplicacionEducativaGrafica2:
         y = int(pos_real[1] * (ALTO_LOGICO / h_real)) if h_real > 0 else 0
         return (x, y)
 
+    def avanzar_paso_o_nuevo_numero(self) -> None:
+        if self.paso_explicacion < 3:
+            self.paso_explicacion += 1
+        else:
+            self.model.generar_nuevo_numero()
+            self.paso_explicacion = 0
+
     def procesar_eventos(self) -> bool:
         pos_raton = self.obtener_pos_raton_logica()
         for evento in pygame.event.get():
@@ -111,7 +119,7 @@ class AplicacionEducativaGrafica2:
                 return False
             if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                 if self.rect_boton.collidepoint(pos_raton):
-                    self.model.generar_nuevo_numero()
+                    self.avanzar_paso_o_nuevo_numero()
         return True
 
     def renderizar_texto_mixto(self, superficie, partes, x, y) -> None:
@@ -162,7 +170,7 @@ class AplicacionEducativaGrafica2:
             BloqueBase10.dibujar_unidad(pantalla, self.columnas_x[2] + 45 + (col_u * 60), self.y_pizarra + 80 + (fila_u * 70))
 
         # ==========================================
-        # SECCIÓ PEDAGÒGICA INTEGRADA (NOUS COLORS)
+        # SECCIÓ PEDAGÒGICA INTEGRADA (PROGRESSIVA)
         # ==========================================
         y_box = 570
         rect_explicacion = pygame.Rect(70, y_box, ANCHO_LOGICO - 140, 120)
@@ -174,43 +182,50 @@ class AplicacionEducativaGrafica2:
         str_decena = "desena" if self.model.decenas == 1 else "desenes"
         str_unidad = "unitat" if self.model.unidades == 1 else "unitats"
 
-        # Línia 1: Desglossament amb èmfasi cromàtic idèntic
+        # Línia 1: Número sol (Pas 0) i desglossament (Pas 1+)
         partes_l1 = [
             ("El número ", False, COLOR_TEXTO),
-            (f"{self.model.numero_actual}", True, COLOR_TEXTO),
-            (" té: ", False, COLOR_TEXTO),
-            (f"{self.model.centenas} ", True, COLOR_CENTENA),
-            (f"{str_centena}, ", False, COLOR_TEXTO),
-            (f"{self.model.decenas} ", True, COLOR_DECENA),
-            (f"{str_decena} i ", False, COLOR_TEXTO),
-            (f"{self.model.unidades} ", True, COLOR_UNIDAD),
-            (f"{str_unidad}.", False, COLOR_TEXTO)
-        ]
-        
-        # Línia 2: Equivalències de les centenes
-        partes_l2 = [
-            ("• Les ", False, COLOR_TEXTO),
-            (f"{self.model.centenas} ", True, COLOR_CENTENA),
-            (f"{str_centena} equivalen a: ", False, COLOR_TEXTO),
-            (f"{self.model.centenas * 10} ", True, COLOR_DECENA),
-            ("desenes o a ", False, COLOR_TEXTO),
-            (f"{self.model.centenas * 100} ", True, COLOR_UNIDAD),
-            ("unitats.", False, COLOR_TEXTO)
+            (f"{self.model.numero_actual}", True, COLOR_TEXTO)
         ]
 
-        # Línia 3: Equivalències de les desenes
-        partes_l3 = [
-            ("• Les ", False, COLOR_TEXTO),
-            (f"{self.model.decenas} ", True, COLOR_DECENA),
-            (f"{str_decena} equivalen a: ", False, COLOR_TEXTO),
-            (f"{self.model.decenas * 10} ", True, COLOR_UNIDAD),
-            ("unitats.", False, COLOR_TEXTO)
-        ]
+        if self.paso_explicacion >= 1:
+            partes_l1.extend([
+                (" té: ", False, COLOR_TEXTO),
+                (f"{self.model.centenas} ", True, COLOR_CENTENA),
+                (f"{str_centena}, ", False, COLOR_TEXTO),
+                (f"{self.model.decenas} ", True, COLOR_DECENA),
+                (f"{str_decena} i ", False, COLOR_TEXTO),
+                (f"{self.model.unidades} ", True, COLOR_UNIDAD),
+                (f"{str_unidad}.", False, COLOR_TEXTO)
+            ])
+        else:
+            partes_l1.append((" té...", False, COLOR_TEXTO))
 
-        # Renderitzar el text
         self.renderizar_texto_mixto(pantalla, partes_l1, rect_explicacion.x + 25, rect_explicacion.y + 15)
-        self.renderizar_texto_mixto(pantalla, partes_l2, rect_explicacion.x + 25, rect_explicacion.y + 50)
-        self.renderizar_texto_mixto(pantalla, partes_l3, rect_explicacion.x + 25, rect_explicacion.y + 80)
+
+        # Línia 2: Equivalències de les centenes (Pas 2+)
+        if self.paso_explicacion >= 2:
+            partes_l2 = [
+                ("• Les ", False, COLOR_TEXTO),
+                (f"{self.model.centenas} ", True, COLOR_CENTENA),
+                (f"{str_centena} equivalen a: ", False, COLOR_TEXTO),
+                (f"{self.model.centenas * 10} ", True, COLOR_DECENA),
+                ("desenes o a ", False, COLOR_TEXTO),
+                (f"{self.model.centenas * 100} ", True, COLOR_UNIDAD),
+                ("unitats.", False, COLOR_TEXTO)
+            ]
+            self.renderizar_texto_mixto(pantalla, partes_l2, rect_explicacion.x + 25, rect_explicacion.y + 50)
+
+        # Línia 3: Equivalències de les desenes (Pas 3)
+        if self.paso_explicacion >= 3:
+            partes_l3 = [
+                ("• Les ", False, COLOR_TEXTO),
+                (f"{self.model.decenas} ", True, COLOR_DECENA),
+                (f"{str_decena} equivalen a: ", False, COLOR_TEXTO),
+                (f"{self.model.decenas * 10} ", True, COLOR_UNIDAD),
+                ("unitats.", False, COLOR_TEXTO)
+            ]
+            self.renderizar_texto_mixto(pantalla, partes_l3, rect_explicacion.x + 25, rect_explicacion.y + 80)
 
         # --- SECCIÓ DEL BOTÓ ---
         pos_raton = self.obtener_pos_raton_logica()
@@ -218,7 +233,8 @@ class AplicacionEducativaGrafica2:
         pygame.draw.rect(pantalla, color_btn, self.rect_boton, border_radius=14)
         pygame.draw.rect(pantalla, COLOR_TEXTO, self.rect_boton, 2, border_radius=14)
         
-        txt_btn = fuente_boton.render("¡Canviar Número!", True, (255, 255, 255))
+        texto_boton = "Següent Pas" if self.paso_explicacion < 3 else "¡Canviar Número!"
+        txt_btn = fuente_boton.render(texto_boton, True, (255, 255, 255))
         txt_rect = txt_btn.get_rect(center=self.rect_boton.center)
         pantalla.blit(txt_btn, txt_rect)
 
