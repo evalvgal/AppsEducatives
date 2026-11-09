@@ -7,7 +7,7 @@ Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python**
 ## 📂 Estructura del Projecte
 
 El projecte està organitzat sota una arquitectura Model-Vista (MVC) neta:
-- **Llengua/**: Aplicació del DUC (Regla mnemotècnica i descomposició de nombres en català).
+- **Llengua/DUC/**: Aplicació del DUC (Regla mnemotècnica i descomposició de nombres en català).
 - **Matematiques/ConcepteUDC/**: Visualització de blocs base 10 per entendre centenes, desenes i unitats.
 - **Matematiques/Restes/**: Aplicació interactiva de la resta amb portades (mètode de compensació).
 - **Matematiques/Sumes/**: Aplicació interactiva de la suma amb portades i animacions.
@@ -72,7 +72,7 @@ python grafics_concepteUDC2.py
 
 ### 🔹 DUC de Llengua:
 ```bash
-cd Llengua
+cd Llengua/DUC
 python grafics_DUC.py
 ```
 
@@ -113,6 +113,6 @@ pyinstaller --noconsole --onefile grafics_sumes.py
 
 ### 3. On trobar l'executable generat?
 
-Un cop finalitzi el procés de compilació, veuràs que s'ha creat una nova carpeta anomenada **`dist`** dins del directori on t'trobis:
+Un cop finalitzi el procés de compilació, veuràs que s'ha creat una nova carpeta anomenada **`dist`** dins del directori on et trobis:
 - **En Windows:** Trobaràs un arxiu `grafics_sumes.exe`.
 - **En macOS:** Trobaràs una aplicació autònoma `grafics_sumes.app` (o executable d'Unix).
