@@ -1,13 +1,14 @@
 # 🧮 Apps Educatives de Matemàtiques i Llengua
 
-Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens de primària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, i les regles d'accentuació en català.
+Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes de primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, les regles d'accentuació en català i els accents diacrítics.
 
 ---
 
 ## 📂 Estructura del Projecte
 
-El projecte està organitzat sota una arquitectura Model-Vista (MVC) neta:
-- **Llengua/Accentuacio/**: Aplicació interactiva de teoria i pràctica pas a pas de les normes d'accentuació en català (Agudes, Planes i Esdrúixoles), estructurada de manera modular en `grafics_accentuacio.py`, `accentuacio.py` i `diccionari.py`.
+El projecte està organitzat sota una arquitectura Model-Vista (MVC) neta i modular:
+- **Llengua/Accentuacio/**: Aplicació interactiva de teoria i pràctica pas a pas de les normes d'accentuació en català (Agudes, Planes i Esdrúixoles), estructurada amb `grafics_accentuacio.py`, `accentuacio.py` i `diccionari.py`.
+- **Llengua/Diacritica/**: Aplicació interactiva per a pissarra digital de l'estudi dels accents diacrítics en català, amb paginació numèrica inferior, targetes duals (amb accent / sense accent) i ressaltat intel·ligent d'exemples. Està composta per `grafics_diacritics.py`, `diacritics.py` i `diccionari_diacritics.py`.
 - **Llengua/DUC/**: Aplicació del DUC (Regla mnemotècnica i descomposició de nombres en català).
 - **Matematiques/ConcepteUDC/**: Visualització de blocs base 10 per entendre centenes, desenes i unitats.
 - **Matematiques/Restes/**: Aplicació interactiva de la resta amb portades (mètode de compensació).
@@ -53,7 +54,13 @@ pip3 install pygame
 
 Per executar qualsevol de les aplicacions, situa't amb la terminal dins de la carpeta corresponent i llança l'arxiu gràfic:
 
-### 🔹 Accenturació en Català:
+### 🔹 Accents Diacrítics en Català:
+```bash
+cd Llengua/Diacritica
+python grafics_diacritics.py
+```
+
+### 🔹 Accentuació en Català:
 ```bash
 cd Llengua/Accentuacio
 python grafics_accentuacio.py
@@ -108,10 +115,10 @@ Instal·la PyInstaller al teu sistema:
 
 ### 2. Crear l'executable
 
-Situa't a la carpeta de l'aplicació que vulguis empaquetar (per exemple, a `Accentuacio`) i executa la comanda següent:
+Situa't a la carpeta de l'aplicació que vulguis empaquetar (per exemple, a `Diacritica`) i executa la comanda següent:
 
 ```bash
-pyinstaller --noconsole --onefile grafics_accentuacio.py
+pyinstaller --noconsole --onefile grafics_diacritics.py
 ```
 
 > **Nota:** L'opció `--noconsole` s'utilitza perquè s'obri directament la interfície gràfica de Pygame sense mostrar la finestra negra de fons de la terminal, i `--onefile` crea un sol fitxer executable.
@@ -121,5 +128,5 @@ pyinstaller --noconsole --onefile grafics_accentuacio.py
 ### 3. On trobar l'executable generat?
 
 Un cop finalitzi el procés de compilació, veuràs que s'ha creat una nova carpeta anomenada **`dist`** dins del directori on et trobis:
-- **En Windows:** Trobaràs un arxiu `grafics_accentuacio.exe`.
-- **En macOS:** Trobaràs una aplicació autònoma `grafics_accentuacio.app` (o executable d'Unix).
+- **En Windows:** Trobaràs un arxiu `grafics_diacritics.exe`.
+- **En macOS:** Trobaràs una aplicació autònoma `grafics_diacritics.app` (o executable d'Unix).
