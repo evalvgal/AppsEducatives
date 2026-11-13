@@ -34,6 +34,10 @@ class JocLectoEscriptura:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.tancar_programa()
 
+            # Alternar pantalla completa amb F11
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
+                pygame.display.toggle_fullscreen()
+
             # 1. Clics de ratolí o tàctils
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN):
                 pos = event.pos if event.type == pygame.MOUSEBUTTONDOWN else (int(event.x * self.vista.amplada), int(event.y * self.vista.alcada))

@@ -482,12 +482,10 @@ class VistaLectoEscriptura:
         txt_fase = self.font_petita.render("Fase 1: Mira atentament com s'escriu", True, self.TEXT_Color)
         self.pantalla.blit(txt_fase, (50, self.alcada - 60))
 
-    def dibuixar_resseguit(self, element, punts_nen):
+    def dibuixar_resseguit(self, element, traços_nen):
         self.dibuixar_letra_estatica(element)
-        if len(punts_nen) > 1:
-            pygame.draw.aalines(self.pantalla, self.VERMELL_Traç, False, punts_nen, 18)
-            for p in punts_nen:
-                pygame.draw.circle(self.pantalla, self.VERMELL_Traç, p, 12)
+        for traç in traços_nen:
+            self.dibuixar_traç_final(traç)
 
         txt_fase = self.font_petita.render("Fase 2: Ressegueix amb el dit a la pissarra!", True, self.TEXT_Color)
         self.pantalla.blit(txt_fase, (50, self.alcada - 60))
