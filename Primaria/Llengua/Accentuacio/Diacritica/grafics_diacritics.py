@@ -9,45 +9,61 @@ from diacritics import DiacriticsModel
 
 pygame.init()
 
+# Resolució lògica base del disseny
 WIN_W, WIN_H = 1100, 780
 
-info = pygame.display.Info()
-w_disponible, h_disponible = info.current_w, info.current_h
-w_v = min(WIN_W, int(w_disponible * 0.85))
-h_v = min(WIN_H, int(h_disponible * 0.80))
-
-prop = WIN_W / WIN_H
-if w_v / h_v > prop:
-    w_v = int(h_v * prop)
-else:
-    h_v = int(w_v / prop)
-
-ventana = pygame.display.set_mode((w_v, h_v), pygame.RESIZABLE)
-pantalla = pygame.Surface((WIN_W, WIN_H))
-pygame.display.set_caption("🔤 Els Accents Diacrítics en Català")
-
 # Colors suaus i educatius
-BG          = (245, 243, 255)
-TEXT_DARK   = (40, 35, 70)
-TEXT_MID    = (70, 65, 100)
-TEXT_GRAY   = (110, 110, 130)  # Color gris suau per al text general
-CARD_BG     = (255, 255, 255)
+BG           = (245, 243, 255)
+TEXT_DARK    = (40, 35, 70)
+TEXT_MID     = (70, 65, 100)
+TEXT_GRAY    = (110, 110, 130)
+CARD_BG      = (255, 255, 255)
 
 # Targeta Blava (Accent Diacrític)
-ACCENT_BG   = (238, 244, 255)
-ACCENT_BD   = (140, 175, 240)
-ACCENT_COL  = (25, 90, 210)
+ACCENT_BG    = (238, 244, 255)
+ACCENT_BD    = (140, 175, 240)
+ACCENT_COL   = (25, 90, 210)
 
 # Targeta Verda (Sense Accent)
-NO_ACC_BG   = (240, 250, 242)
-NO_ACC_BD   = (150, 210, 160)
-NO_ACC_COL  = (30, 140, 60)
+NO_ACC_BG    = (240, 250, 242)
+NO_ACC_BD    = (150, 210, 160)
+NO_ACC_COL   = (30, 140, 60)
 
 # Botons generals i estat actiu en verd
-BTN_MAIN    = (90, 150, 240)
-BTN_HOVER   = (60, 120, 220)
+BTN_MAIN     = (90, 150, 240)
+BTN_HOVER    = (60, 120, 220)
 GREEN_ACTIVE = (40, 180, 80)
 GREEN_HOVER  = (30, 150, 65)
+
+# Botó Sortir
+BTN_EXIT       = (220, 75, 85)
+BTN_EXIT_HOVER = (190, 45, 55)
+
+
+def iniciar_pantalla_completa() -> tuple[pygame.Surface, pygame.Rect]:
+    """
+    Detecta la resolució nativa del monitor, MacBook o Pissarra Digital,
+    obre la finestra a pantalla completa i calcula l'àrea d'escalat proporcional.
+    """
+    info = pygame.display.Info()
+    w_real, h_real = info.current_w, info.current_h
+
+    ventana = pygame.display.set_mode((w_real, h_real), pygame.FULLSCREEN)
+    pygame.display.set_caption("Els Accents Diacrítics en Català")
+
+    escala = min(w_real / WIN_W, h_real / WIN_H)
+    nou_w = int(WIN_W * escala)
+    nou_h = int(WIN_H * escala)
+
+    offset_x = (w_real - nou_w) // 2
+    offset_y = (h_real - nou_h) // 2
+
+    area_render = pygame.Rect(offset_x, offset_y, nou_w, nou_h)
+    return ventana, area_render
+
+
+ventana, area_render = iniciar_pantalla_completa()
+pantalla = pygame.Surface((WIN_W, WIN_H))
 
 # Fonts tipogràfiques grans i llegibles
 font_paraula = pygame.font.SysFont("Helvetica", 64, bold=True)
@@ -83,7 +99,11 @@ class Button:
 class DiacriticsAppGrafica:
     def __init__(self) -> None:
         self.model = DiacriticsModel()
+        self.pantalla_completa = True
         
+        # Botó de sortir a la part superior dreta (alineat amb el marge dret de les targetes: 570 + 480 = 1050)
+        self.btn_sortir = Button(pygame.Rect(WIN_W - 165, 14, 115, 38), "Sortir", BTN_EXIT, BTN_EXIT_HOVER)
+
         self.btn_ant = Button(pygame.Rect(50, WIN_H - 70, 160, 42), "< Anterior", BTN_MAIN, BTN_HOVER)
         self.btn_seg = Button(pygame.Rect(WIN_W - 210, WIN_H - 70, 160, 42), "Següent >", BTN_MAIN, BTN_HOVER)
 
@@ -99,15 +119,40 @@ class DiacriticsAppGrafica:
             rect_b = pygame.Rect(start_x + (i * (ample_btn + espaiat)), y_pos, ample_btn, 42)
             self.btn_pagines.append((i, rect_b))
 
-    def obtenir_pos_raton_logica(self) -> tuple[int, int]:
-        pos_real = pygame.mouse.get_pos()
+    def _recalcular_area(self) -> None:
+        """Recalcula l'àrea de dibuix si es canvia entre pantalla completa i finestra."""
+        global area_render
         w_real, h_real = ventana.get_size()
-        x = int(pos_real[0] * (WIN_W / w_real)) if w_real > 0 else 0
-        y = int(pos_real[1] * (WIN_H / h_real)) if h_real > 0 else 0
+        escala = min(w_real / WIN_W, h_real / WIN_H)
+        nou_w = int(WIN_W * escala)
+        nou_h = int(WIN_H * escala)
+        offset_x = (w_real - nou_w) // 2
+        offset_y = (h_real - nou_h) // 2
+        area_render = pygame.Rect(offset_x, offset_y, nou_w, nou_h)
+
+    def alternar_pantalla_completa(self) -> None:
+        """Permet commutar entre pantalla completa i finestra amb F11."""
+        global ventana
+        self.pantalla_completa = not self.pantalla_completa
+        if self.pantalla_completa:
+            info = pygame.display.Info()
+            ventana = pygame.display.set_mode((info.current_w, info.current_h), pygame.FULLSCREEN)
+        else:
+            ventana = pygame.display.set_mode((WIN_W, WIN_H), pygame.RESIZABLE)
+        self._recalcular_area()
+
+    def obtenir_pos_raton_logica(self) -> tuple[int, int]:
+        """Tradueix les coordenades reals (ratolí o dit a la pissarra) a les lògiques (1100x780)."""
+        pos_real = pygame.mouse.get_pos()
+        if area_render.width <= 0 or area_render.height <= 0:
+            return (0, 0)
+        x = int((pos_real[0] - area_render.x) * (WIN_W / area_render.width))
+        y = int((pos_real[1] - area_render.y) * (WIN_H / area_render.height))
         return (x, y)
 
     def procesar_eventos(self) -> bool:
         mouse_pos = self.obtenir_pos_raton_logica()
+        self.btn_sortir.update(mouse_pos)
         self.btn_ant.update(mouse_pos)
         self.btn_seg.update(mouse_pos)
 
@@ -115,8 +160,13 @@ class DiacriticsAppGrafica:
             if evento.type == pygame.QUIT:
                 return False
 
+            if evento.type == pygame.VIDEORESIZE and not self.pantalla_completa:
+                self._recalcular_area()
+
             if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-                if self.btn_ant.clicked(mouse_pos, evento):
+                if self.btn_sortir.clicked(mouse_pos, evento):
+                    return False
+                elif self.btn_ant.clicked(mouse_pos, evento):
                     self.model.anterior_pagina()
                 elif self.btn_seg.clicked(mouse_pos, evento):
                     self.model.seguent_pagina()
@@ -126,15 +176,18 @@ class DiacriticsAppGrafica:
                         self.model.anar_a_pagina(idx)
 
             if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_LEFT:
+                if evento.key == pygame.K_ESCAPE:
+                    return False
+                elif evento.key == pygame.K_LEFT:
                     self.model.anterior_pagina()
                 elif evento.key == pygame.K_RIGHT:
                     self.model.seguent_pagina()
+                elif evento.key == pygame.K_F11:
+                    self.alternar_pantalla_completa()
 
         return True
 
     def _dibuixar_exemple_intelligent(self, surf: pygame.Surface, x: int, y: int, prefix: str, frase: str, paraula_objectiu: str, color_resaltat: tuple) -> None:
-        """Processa la frase paraula a paraula per ressaltar exactament la paraula diacrítica independentment de majúscules o puntuació."""
         pref_surf = font_text.render(prefix, True, TEXT_GRAY)
         surf.blit(pref_surf, (x, y))
         x_actual = x + pref_surf.get_width()
@@ -154,7 +207,6 @@ class DiacriticsAppGrafica:
             x_actual += w_surf.get_width() + espai_ample
 
     def _dibuixar_detalls_targeta(self, surf: pygame.Surface, card_rect: pygame.Rect, dades: dict, color_principal: tuple) -> None:
-        """Dibuixa el contingut de la targeta."""
         p_surf = font_paraula.render(dades["paraula"], True, color_principal)
         surf.blit(p_surf, (card_rect.x + 30, card_rect.y + 70))
 
@@ -178,8 +230,11 @@ class DiacriticsAppGrafica:
         pantalla.fill(BG)
         parell = self.model.parell_actual
 
+        # Barra superior: botó Sortir a la dreta
+        self.btn_sortir.draw(pantalla, font_peque)
+
         # Targeta Esquerra: AMB ACCENT (Tons Blaus)
-        card_l = pygame.Rect(50, 20, 480, 595)
+        card_l = pygame.Rect(50, 62, 480, 553)
         pygame.draw.rect(pantalla, ACCENT_BG, card_l, border_radius=20)
         pygame.draw.rect(pantalla, ACCENT_BD, card_l, 3, border_radius=20)
 
@@ -191,7 +246,7 @@ class DiacriticsAppGrafica:
         self._dibuixar_detalls_targeta(pantalla, card_l, parell["amb_accent"], ACCENT_COL)
 
         # Targeta Dreta: SENSE ACCENT (Tons Verds)
-        card_r = pygame.Rect(570, 20, 480, 595)
+        card_r = pygame.Rect(570, 62, 480, 553)
         pygame.draw.rect(pantalla, NO_ACC_BG, card_r, border_radius=20)
         pygame.draw.rect(pantalla, NO_ACC_BD, card_r, 3, border_radius=20)
 
@@ -229,7 +284,9 @@ class DiacriticsAppGrafica:
             txt_num = font_peque.render(str(idx + 1), True, col_text)
             pantalla.blit(txt_num, txt_num.get_rect(center=rect.center))
 
-        ventana.blit(pygame.transform.smoothscale(pantalla, ventana.get_size()), (0, 0))
+        ventana.fill(BG)
+        superficie_escalada = pygame.transform.smoothscale(pantalla, (area_render.width, area_render.height))
+        ventana.blit(superficie_escalada, area_render.topleft)
         pygame.display.flip()
 
 

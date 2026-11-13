@@ -1,5 +1,5 @@
 """
-Accenturació en Català — Interfície gràfica i bucle principal amb Pygame.
+Accentuació en Català — Interfície gràfica i bucle principal amb Pygame.
 Requeriments: pip install pygame
 Executar: python grafics_accentuacio.py
 """
@@ -15,37 +15,49 @@ pygame.init()
 
 WIN_W, WIN_H = 1100, 780
 
-info_pantalla = pygame.display.Info()
-ancho_pantalla_disponible = info_pantalla.current_w
-alto_pantalla_disponible = info_pantalla.current_h
-
-ancho_ventana = min(WIN_W, int(ancho_pantalla_disponible * 0.85))
-alto_ventana = min(WIN_H, int(alto_pantalla_disponible * 0.80))
-
-proporcion = WIN_W / WIN_H
-if ancho_ventana / alto_ventana > proporcion:
-    ancho_ventana = int(alto_ventana * proporcion)
-else:
-    alto_ventana = int(ancho_ventana / proporcion)
-
-ventana = pygame.display.set_mode((ancho_ventana, alto_ventana), pygame.RESIZABLE)
-pantalla = pygame.Surface((WIN_W, WIN_H))
-
-pygame.display.set_caption("🔤 Aprèn a Accentuar en Català!")
-
 # Paleta de colors educativa i suau
-BG           = (245, 243, 255)  
-TEXT_DARK    = (50,  40,  80)
-TEXT_MID     = (110, 100, 140)
-CARD_BG      = (255, 255, 255)
-CARD_BD      = (190, 180, 220)
-BTN_MAIN     = ( 90, 160, 255)
-BTN_HOVER    = ( 60, 130, 230)
-BTN_ALT      = (120, 210, 140)
-BTN_ALT_HOV  = ( 90, 180, 110)
-SILABA_BG    = (230, 240, 255)
-SILABA_BD    = (120, 160, 220)
-ACCENT_COL   = (255,  90,  90)
+BG             = (245, 243, 255)  
+TEXT_DARK      = (50,  40,  80)
+TEXT_MID       = (110, 100, 140)
+CARD_BG        = (255, 255, 255)
+CARD_BD        = (190, 180, 220)
+BTN_MAIN       = ( 90, 160, 255)
+BTN_HOVER      = ( 60, 130, 230)
+BTN_ALT        = (120, 210, 140)
+BTN_ALT_HOV    = ( 90, 180, 110)
+SILABA_BG      = (230, 240, 255)
+SILABA_BD      = (120, 160, 220)
+ACCENT_COL     = (255,  90,  90)
+
+# Botó Sortir
+BTN_EXIT       = (220,  75,  85)
+BTN_EXIT_HOVER = (190,  45,  55)
+
+
+def iniciar_pantalla_completa() -> tuple[pygame.Surface, pygame.Rect]:
+    """
+    Detecta la resolució nativa del monitor, MacBook o Pissarra Digital,
+    obre la finestra a pantalla completa i calcula l'àrea d'escalat proporcional.
+    """
+    info_pantalla = pygame.display.Info()
+    w_real, h_real = info_pantalla.current_w, info_pantalla.current_h
+
+    ventana = pygame.display.set_mode((w_real, h_real), pygame.FULLSCREEN)
+    pygame.display.set_caption("Aprèn a Accentuar en Català!")
+
+    escala = min(w_real / WIN_W, h_real / WIN_H)
+    nou_w = int(WIN_W * escala)
+    nou_h = int(WIN_H * escala)
+
+    offset_x = (w_real - nou_w) // 2
+    offset_y = (h_real - nou_h) // 2
+
+    area_render = pygame.Rect(offset_x, offset_y, nou_w, nou_h)
+    return ventana, area_render
+
+
+ventana, area_render = iniciar_pantalla_completa()
+pantalla = pygame.Surface((WIN_W, WIN_H))
 
 # Fonts tipogràfiques
 fuente_titulo = pygame.font.SysFont("Helvetica", 36, bold=True)
@@ -82,20 +94,48 @@ class Button:
 class AccentuacioAppGrafica:
     def __init__(self) -> None:
         self.model = AccentuacioModel()
+        self.pantalla_completa = True
         
         self.btn_mode_normes = Button(pygame.Rect(60, 20, 240, 48), "Normes d'Accent", BTN_MAIN, BTN_HOVER)
         self.btn_mode_joc    = Button(pygame.Rect(315, 20, 240, 48), "Mode Joc (Pràctica)", BTN_ALT, BTN_ALT_HOV)
+        
+        # Botó Sortir a la part superior dreta (alineat amb el marge dret de la targeta: 1100 - 60 = 1040)
+        self.btn_sortir      = Button(pygame.Rect(WIN_W - 180, 20, 120, 48), "Sortir", BTN_EXIT, BTN_EXIT_HOVER)
         
         self.btn_ant = Button(pygame.Rect(60, WIN_H - 75, 200, 48), "< Anterior", BTN_MAIN, BTN_HOVER)
         self.btn_seg = Button(pygame.Rect(WIN_W - 260, WIN_H - 75, 200, 48), "Següent >", BTN_MAIN, BTN_HOVER)
         
         self.btn_joc_accio = Button(pygame.Rect(WIN_W // 2 - 175, WIN_H - 85, 350, 52), "Preguntar: Porta accent?", BTN_ALT, BTN_ALT_HOV)
 
-    def obtener_pos_raton_logica(self) -> tuple[int, int]:
-        pos_real = pygame.mouse.get_pos()
+    def _recalcular_area(self) -> None:
+        """Recalcula l'àrea de dibuix si es canvia entre pantalla completa i finestra."""
+        global area_render
         w_real, h_real = ventana.get_size()
-        x = int(pos_real[0] * (WIN_W / w_real)) if w_real > 0 else 0
-        y = int(pos_real[1] * (WIN_H / h_real)) if h_real > 0 else 0
+        escala = min(w_real / WIN_W, h_real / WIN_H)
+        nou_w = int(WIN_W * escala)
+        nou_h = int(WIN_H * escala)
+        offset_x = (w_real - nou_w) // 2
+        offset_y = (h_real - nou_h) // 2
+        area_render = pygame.Rect(offset_x, offset_y, nou_w, nou_h)
+
+    def alternar_pantalla_completa(self) -> None:
+        """Permet commutar entre pantalla completa i finestra amb F11."""
+        global ventana
+        self.pantalla_completa = not self.pantalla_completa
+        if self.pantalla_completa:
+            info = pygame.display.Info()
+            ventana = pygame.display.set_mode((info.current_w, info.current_h), pygame.FULLSCREEN)
+        else:
+            ventana = pygame.display.set_mode((WIN_W, WIN_H), pygame.RESIZABLE)
+        self._recalcular_area()
+
+    def obtener_pos_raton_logica(self) -> tuple[int, int]:
+        """Tradueix les coordenades reals (ratolí o dit a la pissarra) a les lògiques (1100x780)."""
+        pos_real = pygame.mouse.get_pos()
+        if area_render.width <= 0 or area_render.height <= 0:
+            return (0, 0)
+        x = int((pos_real[0] - area_render.x) * (WIN_W / area_render.width))
+        y = int((pos_real[1] - area_render.y) * (WIN_H / area_render.height))
         return (x, y)
 
     def procesar_eventos(self) -> bool:
@@ -103,6 +143,7 @@ class AccentuacioAppGrafica:
         
         self.btn_mode_normes.update(mouse_pos)
         self.btn_mode_joc.update(mouse_pos)
+        self.btn_sortir.update(mouse_pos)
         
         if self.model.mode_actual == "normes":
             self.btn_ant.update(mouse_pos)
@@ -113,9 +154,14 @@ class AccentuacioAppGrafica:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 return False
+
+            if evento.type == pygame.VIDEORESIZE and not self.pantalla_completa:
+                self._recalcular_area()
             
             if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-                if self.btn_mode_normes.clicked(mouse_pos, evento):
+                if self.btn_sortir.clicked(mouse_pos, evento):
+                    return False
+                elif self.btn_mode_normes.clicked(mouse_pos, evento):
                     self.model.canviar_mode("normes")
                 elif self.btn_mode_joc.clicked(mouse_pos, evento):
                     self.model.canviar_mode("joc")
@@ -128,7 +174,6 @@ class AccentuacioAppGrafica:
                 else:
                     if self.btn_joc_accio.clicked(mouse_pos, evento):
                         self.model.avançar_pas_joc()
-                        # Actualitzem el text del botó segons el pas actual (0, 1, 2, 3)
                         if self.model.joc_pas == 1:
                             self.btn_joc_accio.text = "Preguntar: Porta accent?"
                         elif self.model.joc_pas == 2:
@@ -138,6 +183,17 @@ class AccentuacioAppGrafica:
                         elif self.model.joc_pas == 0:
                             self.btn_joc_accio.text = "Preguntar: Porta accent?"
 
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    return False
+                elif evento.key == pygame.K_F11:
+                    self.alternar_pantalla_completa()
+                elif self.model.mode_actual == "normes":
+                    if evento.key == pygame.K_LEFT:
+                        self.model.anterior_norma()
+                    elif evento.key == pygame.K_RIGHT:
+                        self.model.seguent_norma()
+
         return True
 
     def renderizar(self) -> None:
@@ -145,13 +201,16 @@ class AccentuacioAppGrafica:
         
         self.btn_mode_normes.draw(pantalla, fuente_peque)
         self.btn_mode_joc.draw(pantalla, fuente_peque)
+        self.btn_sortir.draw(pantalla, fuente_peque)
         
         if self.model.mode_actual == "normes":
             self._renderizar_mode_normes(pantalla)
         else:
             self._renderizar_mode_joc(pantalla)
 
-        ventana.blit(pygame.transform.smoothscale(pantalla, ventana.get_size()), (0, 0))
+        ventana.fill(BG)
+        superficie_escalada = pygame.transform.smoothscale(pantalla, (area_render.width, area_render.height))
+        ventana.blit(superficie_escalada, area_render.topleft)
         pygame.display.flip()
 
     def _renderizar_mode_normes(self, surf: pygame.Surface) -> None:
@@ -225,17 +284,14 @@ class AccentuacioAppGrafica:
         txt_inst = fuente_media.render(instruccio, True, TEXT_DARK)
         surf.blit(txt_inst, (WIN_W // 2 - txt_inst.get_width() // 2, card_rect.y + 35))
 
-        # La paraula es mostra sempre sense accent a dalt
         paraula_a_mostrar = self.model.paraula_sense_accent
         p_obj = fuente_grande.render(paraula_a_mostrar, True, BTN_MAIN)
         surf.blit(p_obj, (WIN_W // 2 - p_obj.get_width() // 2, card_rect.y + 85))
 
-        # PAS 1 (Primer clic): Només surt la pregunta "PORTA ACCENT?"
         if self.model.joc_pas == 1:
             txt_res = fuente_media.render("PORTA ACCENT?", True, TEXT_DARK)
             surf.blit(txt_res, (WIN_W // 2 - txt_res.get_width() // 2, card_rect.y + 160))
 
-        # PAS 2 (Segon clic): Surt la resposta (SÍ/NO) i l'argumentació (sense mostrar la pregunta prèvia)
         elif self.model.joc_pas == 2:
             accent_status = "PORTA ACCENT? SÍ" if self.model.paraula_actual["accentuada"] else "PORTA ACCENT? NO"
             col_status = ACCENT_COL if self.model.paraula_actual["accentuada"] else (60, 180, 100)
@@ -247,7 +303,6 @@ class AccentuacioAppGrafica:
             txt_arg = fuente_peque.render(arg_text, True, TEXT_DARK)
             surf.blit(txt_arg, (WIN_W // 2 - txt_arg.get_width() // 2, card_rect.y + 205))
 
-        # PAS 3 (Tercer clic): Es manté la resposta/raó i s'afegeix la descomposició per síl·labes a baix
         elif self.model.joc_pas >= 3:
             accent_status = "PORTA ACCENT? SÍ" if self.model.paraula_actual["accentuada"] else "PORTA ACCENT? NO"
             col_status = ACCENT_COL if self.model.paraula_actual["accentuada"] else (60, 180, 100)
