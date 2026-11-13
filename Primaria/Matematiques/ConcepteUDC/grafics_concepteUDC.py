@@ -16,28 +16,6 @@ pygame.init()
 # Dimensions de la pantalla originals (resolució lògica)
 ANCHO_LOGICO, ALTO_LOGICO = 1050, 680
 
-# Obtenim informació de la pantalla del dispositiu actual
-info_pantalla = pygame.display.Info()
-ancho_pantalla_disponible = info_pantalla.current_w
-alto_pantalla_disponible = info_pantalla.current_h
-
-# Calculem una mida de finestra adaptada a pantalles més petites (p.ex. portàtils Windows)
-ancho_ventana = min(ANCHO_LOGICO, int(ancho_pantalla_disponible * 0.85))
-alto_ventana = min(ALTO_LOGICO, int(alto_pantalla_disponible * 0.80))
-
-# Assegurar proporció
-proporcion = ANCHO_LOGICO / ALTO_LOGICO
-if ancho_ventana / alto_ventana > proporcion:
-    ancho_ventana = int(alto_ventana * proporcion)
-else:
-    alto_ventana = int(ancho_ventana / proporcion)
-
-# Finestra real redimensionable i pantalla virtual de dibuix
-ventana = pygame.display.set_mode((ancho_ventana, alto_ventana), pygame.RESIZABLE)
-pantalla = pygame.Surface((ANCHO_LOGICO, ALTO_LOGICO))
-
-pygame.display.set_caption("¡Aprenem les Centenes, Desenes i Unitats! 🧮")
-
 # ─────────────────────────────────────────────────────────────────
 # PALETA DE COLORS IMPORTADA I ADAPTADA DE "SUMA AMB PORTADES"
 # ─────────────────────────────────────────────────────────────────
@@ -54,14 +32,46 @@ COLOR_UNIDAD = (100, 210, 140)      # Verd menta (U_COL_BD)
 COLOR_BOTON = (90, 160, 255)        # Blau de botó principal (BTN_MAIN)
 COLOR_BOTON_HOVER = (60, 130, 230)  # Blau interactiu actiu (BTN_HOVER)
 
+# Botó Sortir
+COLOR_BOTON_SALIR = (220, 75, 85)
+COLOR_BOTON_SALIR_HOVER = (190, 45, 55)
+
+
+def iniciar_pantalla_completa() -> tuple[pygame.Surface, pygame.Rect]:
+    """
+    Detecta la resolució nativa del monitor, MacBook o Pissarra Digital,
+    obre la finestra a pantalla completa i calcula l'àrea d'escalat proporcional.
+    """
+    info_pantalla = pygame.display.Info()
+    w_real, h_real = info_pantalla.current_w, info_pantalla.current_h
+
+    ventana = pygame.display.set_mode((w_real, h_real), pygame.FULLSCREEN)
+    pygame.display.set_caption("¡Aprenem les Centenes, Desenes i Unitats! 🧮")
+
+    escala = min(w_real / ANCHO_LOGICO, h_real / ALTO_LOGICO)
+    nou_w = int(ANCHO_LOGICO * escala)
+    nou_h = int(ALTO_LOGICO * escala)
+
+    offset_x = (w_real - nou_w) // 2
+    offset_y = (h_real - nou_h) // 2
+
+    area_render = pygame.Rect(offset_x, offset_y, nou_w, nou_h)
+    return ventana, area_render
+
+
+ventana, area_render = iniciar_pantalla_completa()
+pantalla = pygame.Surface((ANCHO_LOGICO, ALTO_LOGICO))
+
 # Fonts
 fuente_gigante = pygame.font.SysFont("Helvetica", 65, bold=True)
 fuente_grande = pygame.font.SysFont("Helvetica", 40, bold=True)
 fuente_media = pygame.font.SysFont("Helvetica", 24, bold=True)
 fuente_peque = pygame.font.SysFont("Helvetica", 18, bold=True)
 fuente_boton = pygame.font.SysFont("Helvetica", 32, bold=True)
+fuente_salir = pygame.font.SysFont("Helvetica", 18, bold=True)
 
 reloj = pygame.time.Clock()
+
 
 class BloqueBase10:
     @staticmethod
@@ -87,18 +97,48 @@ class BloqueBase10:
     def dibujar_unidad(cls, superficie, x, y):
         cls.dibujar_cubito(superficie, x, y, 22, COLOR_UNIDAD)
 
+
 class AplicacionEducativaGrafica:
     def __init__(self) -> None:
         self.model = ConcepteUDCModel()
+        self.pantalla_completa = True
         self.columnas_x = [60, 385, 710]
         self.ancho_col, self.alto_pizarra, self.y_pizarra = 280, 380, 190
+        
+        # Botó Sortir a la part superior dreta (alineat amb el marge dret de la columna Unitats: 710 + 280 = 990)
+        self.rect_boton_salir = pygame.Rect(ANCHO_LOGICO - 180, 15, 120, 42)
+        
         self.rect_boton = pygame.Rect(ANCHO_LOGICO // 2 - 150, ALTO_LOGICO - 80, 300, 60)
 
-    def obtener_pos_raton_logica(self) -> tuple[int, int]:
-        pos_real = pygame.mouse.get_pos()
+    def _recalcular_area(self) -> None:
+        """Recalcula l'àrea de dibuix si es canvia entre pantalla completa i finestra."""
+        global area_render
         w_real, h_real = ventana.get_size()
-        x = int(pos_real[0] * (ANCHO_LOGICO / w_real)) if w_real > 0 else 0
-        y = int(pos_real[1] * (ALTO_LOGICO / h_real)) if h_real > 0 else 0
+        escala = min(w_real / ANCHO_LOGICO, h_real / ALTO_LOGICO)
+        nou_w = int(ANCHO_LOGICO * escala)
+        nou_h = int(ALTO_LOGICO * escala)
+        offset_x = (w_real - nou_w) // 2
+        offset_y = (h_real - nou_h) // 2
+        area_render = pygame.Rect(offset_x, offset_y, nou_w, nou_h)
+
+    def alternar_pantalla_completa(self) -> None:
+        """Permet commutar entre pantalla completa i finestra amb F11."""
+        global ventana
+        self.pantalla_completa = not self.pantalla_completa
+        if self.pantalla_completa:
+            info = pygame.display.Info()
+            ventana = pygame.display.set_mode((info.current_w, info.current_h), pygame.FULLSCREEN)
+        else:
+            ventana = pygame.display.set_mode((ANCHO_LOGICO, ALTO_LOGICO), pygame.RESIZABLE)
+        self._recalcular_area()
+
+    def obtener_pos_raton_logica(self) -> tuple[int, int]:
+        """Tradueix les coordenades reals (ratolí o dit a la pissarra) a les lògiques (1050x680)."""
+        pos_real = pygame.mouse.get_pos()
+        if area_render.width <= 0 or area_render.height <= 0:
+            return (0, 0)
+        x = int((pos_real[0] - area_render.x) * (ANCHO_LOGICO / area_render.width))
+        y = int((pos_real[1] - area_render.y) * (ALTO_LOGICO / area_render.height))
         return (x, y)
 
     def procesar_eventos(self) -> bool:
@@ -106,15 +146,40 @@ class AplicacionEducativaGrafica:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 return False
+
+            if evento.type == pygame.VIDEORESIZE and not self.pantalla_completa:
+                self._recalcular_area()
+
             if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-                if self.rect_boton.collidepoint(pos_raton):
+                if self.rect_boton_salir.collidepoint(pos_raton):
+                    return False
+                elif self.rect_boton.collidepoint(pos_raton):
                     self.model.generar_nuevo_numero()
+
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    return False
+                elif evento.key == pygame.K_F11:
+                    self.alternar_pantalla_completa()
+                elif evento.key == pygame.K_SPACE or evento.key == pygame.K_RETURN or evento.key == pygame.K_RIGHT:
+                    self.model.generar_nuevo_numero()
+
         return True
 
     def renderizar(self) -> None:
         pantalla.fill(COLOR_FONDO)
+        pos_raton = self.obtener_pos_raton_logica()
+
+        # Instrucció superior alineada a l'esquerra amb la columna Centenes per deixar espai al botó Sortir
         txt_instrucciones = fuente_media.render("¡Mira el número i compta els blocs màgics!", True, COLOR_TEXTO)
-        pantalla.blit(txt_instrucciones, (ANCHO_LOGICO // 2 - txt_instrucciones.get_width() // 2, 20))
+        pantalla.blit(txt_instrucciones, (60, 22))
+
+        # Botó Sortir a la cantonada superior dreta
+        color_salir = COLOR_BOTON_SALIR_HOVER if self.rect_boton_salir.collidepoint(pos_raton) else COLOR_BOTON_SALIR
+        pygame.draw.rect(pantalla, color_salir, self.rect_boton_salir, border_radius=12)
+        pygame.draw.rect(pantalla, COLOR_TEXTO, self.rect_boton_salir, 2, border_radius=12)
+        txt_btn_s = fuente_salir.render("Sortir", True, COLOR_PIZARRA)
+        pantalla.blit(txt_btn_s, txt_btn_s.get_rect(center=self.rect_boton_salir.center))
 
         cifras = [
             (str(self.model.centenas), "Centenes", COLOR_CENTENA, self.columnas_x[0]),
@@ -150,7 +215,6 @@ class AplicacionEducativaGrafica:
             fila_u, col_u = u // 3, u % 3
             BloqueBase10.dibujar_unidad(pantalla, self.columnas_x[2] + 45 + (col_u * 70), self.y_pizarra + 80 + (fila_u * 75))
 
-        pos_raton = self.obtener_pos_raton_logica()
         color_btn = COLOR_BOTON_HOVER if self.rect_boton.collidepoint(pos_raton) else COLOR_BOTON
         pygame.draw.rect(pantalla, color_btn, self.rect_boton, border_radius=14)
         pygame.draw.rect(pantalla, COLOR_TEXTO, self.rect_boton, 2, border_radius=14)
@@ -159,8 +223,11 @@ class AplicacionEducativaGrafica:
         txt_rect = txt_btn.get_rect(center=self.rect_boton.center)
         pantalla.blit(txt_btn, txt_rect)
 
-        ventana.blit(pygame.transform.smoothscale(pantalla, ventana.get_size()), (0, 0))
+        ventana.fill(COLOR_FONDO)
+        superficie_escalada = pygame.transform.smoothscale(pantalla, (area_render.width, area_render.height))
+        ventana.blit(superficie_escalada, area_render.topleft)
         pygame.display.flip()
+
 
 def main() -> None:
     app = AplicacionEducativaGrafica()
@@ -171,6 +238,7 @@ def main() -> None:
         app.renderizar()
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__": 
     main()

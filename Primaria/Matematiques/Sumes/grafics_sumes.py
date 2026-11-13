@@ -1,7 +1,7 @@
 """
 Suma amb Portades — Interfície gràfica i bucle principal amb Pygame.
 Requeriments: pip install pygame
-Executar: python grafics.py
+Executar: python grafics_sumes.py
 """
 
 import sys
@@ -35,6 +35,8 @@ BTN_MAIN     = ( 90, 160, 255)
 BTN_HOVER    = ( 60, 130, 230)
 BTN_NEW      = (100, 210, 120)
 BTN_NEW_HOV  = ( 70, 180,  90)
+BTN_EXIT     = (220,  75,  85)
+BTN_EXIT_HOV = (190,  45,  55)
 GREEN_OK     = ( 60, 200, 100)
 RED_ERR      = (230,  70,  70)
 
@@ -153,21 +155,9 @@ class SumaPortadesApp:
 
     def __init__(self) -> None:
         pygame.init()
-        
-        info_pantalla = pygame.display.Info()
-        ancho_pantalla_disponible = info_pantalla.current_w
-        alto_pantalla_disponible = info_pantalla.current_h
-
-        ancho_ventana = min(WIN_W, int(ancho_pantalla_disponible * 0.85))
-        alto_ventana = min(WIN_H, int(alto_pantalla_disponible * 0.80))
-
-        proporcion = WIN_W / WIN_H
-        if ancho_ventana / alto_ventana > proporcion:
-            ancho_ventana = int(alto_ventana * proporcion)
-        else:
-            alto_ventana = int(ancho_ventana / proporcion)
-
-        self.screen_real = pygame.display.set_mode((ancho_ventana, alto_ventana), pygame.RESIZABLE)
+        self.fullscreen = True
+        self.area_render = pygame.Rect(0, 0, WIN_W, WIN_H)
+        self._init_display(fullscreen=True)
         self.screen = pygame.Surface((WIN_W, WIN_H))
         
         pygame.display.set_caption(TITLE)
@@ -181,11 +171,33 @@ class SumaPortadesApp:
         self._confetti: list[dict] = []
         self._stars = make_star_positions(30, pygame.Rect(0, 0, WIN_W, WIN_H // 2))
 
-    def _get_mouse_pos_logical(self) -> tuple[int, int]:
-        pos_real = pygame.mouse.get_pos()
+    def _init_display(self, fullscreen: bool) -> None:
+        """Configura la finestra a pantalla completa o redimensionable i recalcula l'àrea proporcional."""
+        self.fullscreen = fullscreen
+        if fullscreen:
+            info = pygame.display.Info()
+            self.screen_real = pygame.display.set_mode((info.current_w, info.current_h), pygame.FULLSCREEN)
+        else:
+            self.screen_real = pygame.display.set_mode((WIN_W, WIN_H), pygame.RESIZABLE)
+        self._recalculate_render_area()
+
+    def _recalculate_render_area(self) -> None:
+        """Calcula l'escalat i el centrat (letterboxing) per evitar deformacions."""
         w_real, h_real = self.screen_real.get_size()
-        x = int(pos_real[0] * (WIN_W / w_real)) if w_real > 0 else 0
-        y = int(pos_real[1] * (WIN_H / h_real)) if h_real > 0 else 0
+        scale = min(w_real / WIN_W, h_real / WIN_H)
+        new_w = int(WIN_W * scale)
+        new_h = int(WIN_H * scale)
+        offset_x = (w_real - new_w) // 2
+        offset_y = (h_real - new_h) // 2
+        self.area_render = pygame.Rect(offset_x, offset_y, new_w, new_h)
+
+    def _get_mouse_pos_logical(self) -> tuple[int, int]:
+        """Tradueix les coordenades reals (ratolí o dit a la pissarra) a les lògiques (900x720)."""
+        pos_real = pygame.mouse.get_pos()
+        if self.area_render.width <= 0 or self.area_render.height <= 0:
+            return (0, 0)
+        x = int((pos_real[0] - self.area_render.x) * (WIN_W / self.area_render.width))
+        y = int((pos_real[1] - self.area_render.y) * (WIN_H / self.area_render.height))
         return (x, y)
 
     def _load_fonts(self) -> None:
@@ -205,6 +217,14 @@ class SumaPortadesApp:
         self.font_label  = try_font(["comicsansms", "chalkboard", "arial"], 20)
 
     def _build_ui(self) -> None:
+        # Botó Sortir a la cantonada superior dreta
+        self.btn_exit = Button(
+            rect      = pygame.Rect(WIN_W - 155, 16, 115, 42),
+            text      = "Sortir",
+            color     = BTN_EXIT,
+            hover_col = BTN_EXIT_HOV,
+        )
+
         bw, bh = 220, 52
         margin = 24
         total_btns_w = 2 * bw + margin
@@ -231,6 +251,8 @@ class SumaPortadesApp:
         self.btn_step.enabled = True
 
     def _advance_step(self) -> None:
+        if not self.btn_step.enabled:
+            return
         result_y = GRID_TOP + 288
         self.model.advance_step()
 
@@ -430,7 +452,6 @@ class SumaPortadesApp:
         }
         col_idx = highlight_map.get(self.model.phase)
         if col_idx is not None:
-            cx = col_center_x(col_idx)
             pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.005)
             alpha = int(60 + 60 * pulse)
             hl = pygame.Surface((COL_W - 10, GRID_H - 10), pygame.SRCALPHA)
@@ -444,20 +465,31 @@ class SumaPortadesApp:
             dt = self.clock.tick(FPS)
             
             mouse_pos_logical = self._get_mouse_pos_logical()
+            self.btn_exit.update(mouse_pos_logical)
             self.btn_step.update(mouse_pos_logical)
             self.btn_new.update(mouse_pos_logical)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.VIDEORESIZE and not self.fullscreen:
+                    self._recalculate_render_area()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
+                    elif event.key == pygame.K_F11:
+                        self._init_display(not self.fullscreen)
+                    elif event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
+                        self._advance_step()
+                    elif event.key == pygame.K_n:
+                        self._new_problem()
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if self.btn_step.clicked(mouse_pos_logical, event):
+                    if self.btn_exit.clicked(mouse_pos_logical, event):
+                        running = False
+                    elif self.btn_step.clicked(mouse_pos_logical, event):
                         self._advance_step()
-                    if self.btn_new.clicked(mouse_pos_logical, event):
+                    elif self.btn_new.clicked(mouse_pos_logical, event):
                         self._new_problem()
 
             self._update_animations()
@@ -474,13 +506,16 @@ class SumaPortadesApp:
             self._draw_results(surf)
             self._draw_animations(surf)
             self._draw_message(surf)
+            self.btn_exit.draw(surf, self.font_label)
             self.btn_step.draw(surf, self.font_small)
             self.btn_new.draw(surf, self.font_small)
 
             if self._confetti:
                 self._draw_confetti(surf)
 
-            self.screen_real.blit(pygame.transform.smoothscale(self.screen, self.screen_real.get_size()), (0, 0))
+            self.screen_real.fill(BG)
+            scaled_surf = pygame.transform.smoothscale(self.screen, (self.area_render.width, self.area_render.height))
+            self.screen_real.blit(scaled_surf, self.area_render.topleft)
             pygame.display.flip()
 
         pygame.quit()
