@@ -30,6 +30,10 @@ class JocLectoEscriptura:
             if event.type == pygame.QUIT:
                 self.tancar_programa()
 
+            # Sortir immediatament prement la tecla ESC en qualsevol moment
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.tancar_programa()
+
             # 1. Clics de ratolí o tàctils
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN):
                 pos = event.pos if event.type == pygame.MOUSEBUTTONDOWN else (int(event.x * self.vista.amplada), int(event.y * self.vista.alcada))
@@ -207,7 +211,7 @@ def obtenir_missatge_estat(estat, element, practica):
     elif estat == "FASE_RESSEGUIR":
         return f"Vine a la pissarra i ressegueix el '{element}'!"
     elif estat == "CELEBRACIO":
-        return "Molt bé! Campió/-na!"
+        return "Molt bé! Campió/a!"
     return ""
 
 if __name__ == "__main__":
