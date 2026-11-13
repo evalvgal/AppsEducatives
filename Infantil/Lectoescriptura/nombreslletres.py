@@ -184,9 +184,7 @@ class JocLectoEscriptura:
         elif self.estat == "FASE_ANIMACIO":
             self.vista.dibuixar_animacio_traç(self.element_actual, self.ruta_animacio, self.progres_animacio, limit_progres=240)
         elif self.estat == "FASE_RESSEGUIR":
-            self.vista.dibuixar_letra_estatica(self.element_actual)
-            for traç in self.traços_nen:
-                self.vista.dibuixar_traç_final(traç)
+            self.vista.dibuixar_resseguit(self.element_actual, self.traços_nen)
             if self.pressionat and len(self.traç_actual) > 1:
                 self.vista.dibuixar_traç_final(self.traç_actual)
         elif self.estat == "CELEBRACIO":

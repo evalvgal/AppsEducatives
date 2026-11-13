@@ -3,11 +3,16 @@ import random
 import math
 
 class VistaLectoEscriptura:
-    def __init__(self, amplada=1280, alcada=720):
+    def __init__(self):
         pygame.init()
-        self.amplada = amplada
-        self.alcada = alcada
-        self.pantalla = pygame.display.set_mode((self.amplada, self.alcada))
+        
+        # Detecció automàtica de la resolució de la pantalla actual (PC, Mac o Pissarra Digital)
+        info_pantalla = pygame.display.Info()
+        self.amplada = info_pantalla.current_w if info_pantalla.current_w > 0 else 1280
+        self.alcada = info_pantalla.current_h if info_pantalla.current_h > 0 else 720
+
+        # Creació de la finestra directament a pantalla completa amb la resolució nativa detectada
+        self.pantalla = pygame.display.set_mode((self.amplada, self.alcada), pygame.FULLSCREEN)
         pygame.display.set_caption("Aprèn a escriure - Pissarra Digital")
         
         self.rellotge = pygame.time.Clock()
@@ -444,8 +449,10 @@ class VistaLectoEscriptura:
         return ruta
 
     def dibuixar_letra_estatica(self, element, pos=(640, 360)):
+        # Centrar automàticament independentment de la resolució
+        cx, cy = self.amplada // 2, self.alcada // 2
         txt = self.font_gran.render(str(element), True, self.GRIS_Guia)
-        rect = txt.get_rect(center=pos)
+        rect = txt.get_rect(center=(cx, cy))
         self.pantalla.blit(txt, rect)
         return rect
 
@@ -475,8 +482,8 @@ class VistaLectoEscriptura:
         txt_fase = self.font_petita.render("Fase 1: Mira atentament com s'escriu", True, self.TEXT_Color)
         self.pantalla.blit(txt_fase, (50, self.alcada - 60))
 
-    def dibuixar_resseguit(self, element, punts_nen, pos=(640, 360)):
-        self.dibuixar_letra_estatica(element, pos)
+    def dibuixar_resseguit(self, element, punts_nen):
+        self.dibuixar_letra_estatica(element)
         if len(punts_nen) > 1:
             pygame.draw.aalines(self.pantalla, self.VERMELL_Traç, False, punts_nen, 18)
             for p in punts_nen:
