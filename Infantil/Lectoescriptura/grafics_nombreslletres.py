@@ -518,24 +518,59 @@ class VistaLectoEscriptura:
                 c['x'] = random.randint(0, self.amplada)
             pygame.draw.circle(self.pantalla, c['color'], (int(c['x']), int(c['y'])), c['radi'])
 
-    def dibuixar_botons_finals(self):
-        boto_repetir_rect = pygame.Rect(self.amplada // 2 - 450, 130, 280, 65)
-        boto_canviar_rect = pygame.Rect(self.amplada // 2 - 140, 130, 280, 65)
-        boto_mode_rect = pygame.Rect(self.amplada // 2 + 170, 130, 280, 65)
+    def renderitzar_text_ajustat(self, text, rect_boto, color=(255, 255, 255), marge_x=20, marge_y=14):
+        """Calcula dinàmicament la mida de la font perquè el text càpiga dins el botó amb marges."""
+        mida_font = 40
+        mida_minima = 16
+        amplada_max = rect_boto.width - marge_x
+        alcada_max = rect_boto.height - marge_y
 
-        pygame.draw.rect(self.pantalla, self.BLAU_Botó, boto_repetir_rect, border_radius=16)
+        while mida_font >= mida_minima:
+            try:
+                font = pygame.font.SysFont("Arial", mida_font, bold=True)
+            except:
+                font = pygame.font.Font(None, mida_font)
+
+            superficie_text = font.render(text, True, color)
+            if superficie_text.get_width() <= amplada_max and superficie_text.get_height() <= alcada_max:
+                return superficie_text
+            mida_font -= 2
+
+        return superficie_text
+
+    def dibuixar_botons_finals(self):
+        # 4 botons repartits uniformement: Fase 1 (Blau), Esborra (Rosa), Canviar (Verd), Menú principal (Taronja)
+        ample_boto = 230
+        alcada_boto = 65
+        espaiat = 20
+        ample_total = (4 * ample_boto) + (3 * espaiat)
+        inici_x = (self.amplada - ample_total) // 2
+        y_pos = 130
+
+        ROSA_Esborra = (232, 67, 147)
+
+        boto_fase1_rect = pygame.Rect(inici_x, y_pos, ample_boto, alcada_boto)
+        boto_esborra_rect = pygame.Rect(inici_x + ample_boto + espaiat, y_pos, ample_boto, alcada_boto)
+        boto_canviar_rect = pygame.Rect(inici_x + (ample_boto + espaiat) * 2, y_pos, ample_boto, alcada_boto)
+        boto_mode_rect = pygame.Rect(inici_x + (ample_boto + espaiat) * 3, y_pos, ample_boto, alcada_boto)
+
+        pygame.draw.rect(self.pantalla, self.BLAU_Botó, boto_fase1_rect, border_radius=16)
+        pygame.draw.rect(self.pantalla, ROSA_Esborra, boto_esborra_rect, border_radius=16)
         pygame.draw.rect(self.pantalla, self.VERD_Exit, boto_canviar_rect, border_radius=16)
         pygame.draw.rect(self.pantalla, self.Taronja_Opcio, boto_mode_rect, border_radius=16)
 
-        txt_rep = self.font_mitjana.render("Tornar a repetir", True, self.BLANC)
-        txt_can = self.font_mitjana.render("Canviar", True, self.BLANC)
-        txt_mode = self.font_mitjana.render("Menú principal", True, self.BLANC)
+        txt_f1 = self.renderitzar_text_ajustat("Fase 1", boto_fase1_rect, self.BLANC)
+        txt_esb = self.renderitzar_text_ajustat("Esborra", boto_esborra_rect, self.BLANC)
+        txt_can = self.renderitzar_text_ajustat("Canviar", boto_canviar_rect, self.BLANC)
+        txt_mode = self.renderitzar_text_ajustat("Menú principal", boto_mode_rect, self.BLANC)
 
-        self.pantalla.blit(txt_rep, txt_rep.get_rect(center=boto_repetir_rect.center))
+        self.pantalla.blit(txt_f1, txt_f1.get_rect(center=boto_fase1_rect.center))
+        self.pantalla.blit(txt_esb, txt_esb.get_rect(center=boto_esborra_rect.center))
         self.pantalla.blit(txt_can, txt_can.get_rect(center=boto_canviar_rect.center))
         self.pantalla.blit(txt_mode, txt_mode.get_rect(center=boto_mode_rect.center))
 
-        return boto_repetir_rect, boto_canviar_rect, boto_mode_rect
+        return boto_fase1_rect, boto_esborra_rect, boto_canviar_rect, boto_mode_rect        
+
 
     def actualitzar_pantalla(self):
         pygame.display.flip()

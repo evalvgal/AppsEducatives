@@ -73,15 +73,21 @@ class JocLectoEscriptura:
                     self.traç_actual = [pos]
 
                 elif self.estat == "CELEBRACIO":
-                    boto_rep, boto_can, boto_mode = self.vista.dibuixar_botons_finals()
-                    if boto_rep.collidepoint(pos):
-                        # Repetir el mateix element
+                    boto_f1, boto_esb, boto_can, boto_mode = self.vista.dibuixar_botons_finals()
+                    if boto_f1.collidepoint(pos):
+                        # Tornar a la Fase 1 (Repetir animació completa)
                         self.traços_nen = []
                         self.traç_actual = []
                         self.ruta_animacio = self.vista.generar_ruta_element(self.element_actual, self.practica, self.tipus_lletra)
                         self.longitud_esperada = self.calcular_longitud_ruta(self.ruta_animacio)
                         self.estat = "FASE_ANIMACIO"
                         self.progres_animacio = 0
+                    elif boto_esb.collidepoint(pos):
+                        # Esborra els traços i reanuda només la Fase 2 (Resseguit)
+                        self.traços_nen = []
+                        self.traç_actual = []
+                        self.pressionat = False
+                        self.estat = "FASE_RESSEGUIR"
                     elif boto_can.collidepoint(pos):
                         # Canviar només d'element
                         self.estat = "ESPECIFICAR_ELEMENT"
