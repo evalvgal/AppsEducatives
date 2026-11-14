@@ -129,17 +129,32 @@ class JocLectoEscriptura:
                     self.pressionat = False
                     self.traç_actual = []
 
+                    # 1. Determinar el nombre de traços necessaris segons l'element
+                    elem = self.element_actual.upper()
+                    if self.practica == "LLETRA" and self.tipus_lletra == "MAJUSCULA":
+                        if elem in ['E', 'F', 'H', 'K', 'R', 'Z']:
+                            traços_necessaris = 4
+                        elif elem in ['A', 'B', 'M', 'N', 'W', 'Y']:
+                            traços_necessaris = 4
+                        elif elem in ['C', 'G', 'I', 'J', 'L', 'O', 'S', 'U', 'V', 'D', 'P', 'Q']:
+                            traços_necessaris = 1 # Lletres d'un sol traç continu (com la C, O, S...) o cercle principal
+                        else:
+                            traços_necessaris = 3
+                    elif self.practica == "LLETRA" and self.tipus_lletra == "MINUSCULA":
+                        traços_necessaris = 1 if elem in ['c', 'o', 's', 'e'] else 2
+                    else: # NOMBRES
+                        traços_necessaris = 1 if elem in ['0', '3', '8'] else 2
+
+                    # Ajust específic per a la 'E' majúscula (1 vertical + 3 horitzontals = 4 traços)
+                    if elem == 'E' and self.tipus_lletra == "MAJUSCULA":
+                        traços_necessaris = 4
+
+                    # 2. Calcular longitud total i establir un llindar flexible (40%)
                     longitud_total = self.calcular_longitud_total_traços()
-                    
-                    # Llindar adaptatiu segons el tipus de pràctica
-                    if self.practica == "NOMBRE":
-                        validat = longitud_total > (self.longitud_esperada * 0.55)
-                    elif self.tipus_lletra == "MINUSCULA":
-                        validat = longitud_total > (self.longitud_esperada * 0.55)
-                    else:
-                        validat = longitud_total > (self.longitud_esperada * 0.70)
-                    
-                    if validat:
+                    llindar_flexible = self.longitud_esperada * 0.40
+
+                    # S'activa la celebració només si ha fet tots els traços i la longitud global és coherent
+                    if len(self.traços_nen) >= traços_necessaris and longitud_total > llindar_flexible:
                         self.estat = "CELEBRACIO"
                         self.vista.crear_confeti()
 
