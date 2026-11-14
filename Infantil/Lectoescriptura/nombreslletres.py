@@ -137,7 +137,7 @@ class JocLectoEscriptura:
                         elif elem in ['A', 'B', 'M', 'N', 'W', 'Y']:
                             traços_necessaris = 4
                         elif elem in ['C', 'G', 'I', 'J', 'L', 'O', 'S', 'U', 'V', 'D', 'P', 'Q']:
-                            traços_necessaris = 1 # Lletres d'un sol traç continu (com la C, O, S...) o cercle principal
+                            traços_necessaris = 1
                         else:
                             traços_necessaris = 3
                     elif self.practica == "LLETRA" and self.tipus_lletra == "MINUSCULA":
@@ -145,7 +145,6 @@ class JocLectoEscriptura:
                     else: # NOMBRES
                         traços_necessaris = 1 if elem in ['0', '3', '8'] else 2
 
-                    # Ajust específic per a la 'E' majúscula (1 vertical + 3 horitzontals = 4 traços)
                     if elem == 'E' and self.tipus_lletra == "MAJUSCULA":
                         traços_necessaris = 4
 
@@ -153,7 +152,6 @@ class JocLectoEscriptura:
                     longitud_total = self.calcular_longitud_total_traços()
                     llindar_flexible = self.longitud_esperada * 0.40
 
-                    # S'activa la celebració només si ha fet tots els traços i la longitud global és coherent
                     if len(self.traços_nen) >= traços_necessaris and longitud_total > llindar_flexible:
                         self.estat = "CELEBRACIO"
                         self.vista.crear_confeti()
@@ -211,6 +209,10 @@ class JocLectoEscriptura:
             for traç in self.traços_nen:
                 self.vista.dibuixar_traç_final(traç)
             self.vista.actualitzar_i_dibuixar_confeti()
+            
+            # Dibuixar la cara somrient gran al centre superior
+            self.vista.dibuixar_cara_somrient((self.vista.amplada // 2, 70))
+            
             self.vista.dibuixar_botons_finals()
 
         self.vista.actualitzar_pantalla()
@@ -228,7 +230,7 @@ def obtenir_missatge_estat(estat, element, practica):
     elif estat == "FASE_RESSEGUIR":
         return f"Vine a la pissarra i ressegueix el '{element}'!"
     elif estat == "CELEBRACIO":
-        return "Molt bé! Campió/a!"
+        return ""
     return ""
 
 if __name__ == "__main__":

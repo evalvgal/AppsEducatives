@@ -540,3 +540,20 @@ class VistaLectoEscriptura:
     def actualitzar_pantalla(self):
         pygame.display.flip()
         self.rellotge.tick(60)
+
+    def dibuixar_cara_somrient(self, center, radi=45):
+        groc = (241, 196, 15)
+        negre = (44, 62, 80)
+        
+        # 1. Cap de la cara (cercle groc ben gran centrat)
+        pygame.draw.circle(self.pantalla, groc, center, radi)
+        pygame.draw.circle(self.pantalla, negre, center, radi, 4) # Vora negra
+        
+        # 2. Ulls (dos puntets)
+        ull_radi = 6
+        pygame.draw.circle(self.pantalla, negre, (center[0] - 16, center[1] - 10), ull_radi)
+        pygame.draw.circle(self.pantalla, negre, (center[0] + 16, center[1] - 10), ull_radi)
+        
+        # 3. Somriure feliç (arc orientat cap avall formant un bon somriure)
+        rect_arc = pygame.Rect(center[0] - 22, center[1] - 2, 44, 30)
+        pygame.draw.arc(self.pantalla, negre, rect_arc, math.pi, 2 * math.pi, 4)
