@@ -1,6 +1,6 @@
 # 🧮 Apps Educatives de Matemàtiques i Llengua
 
-Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, les regles d'accentuació en català, els accents diacrítics i la lectoescriptura pas a pas.
+Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, i la lectoescriptura pas a pas.
 
 ---
 
@@ -9,11 +9,14 @@ Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python**
 El projecte està organitzat per etapes educatives sota una arquitectura Model-Vista (MVC) neta i modular:
 
 ### 🧸 Educació Infantil
+
 - **Infantil/Lectoescriptura/**: Aplicació interactiva per a pissarra digital orientada a infantil per aprendre a escriure lletres (majúscules i minúscules) i nombres (0 al 9) amb animació de traços guiats i resseguit tàctil. Està composta per `grafics_nombreslletres.py` i `nombreslletres.py`.
 
 ### 🎒 Educació Primària
+
 - **Primaria/Llengua/Accentuacio/**: Aplicació interactiva de teoria i pràctica pas a pas de les normes d'accentuació en català (Agudes, Planes i Esdrúixoles).
 - **Primaria/Llengua/Accentuacio/Diacritica/**: Aplicació interactiva per a pissarra digital de l'estudi dels accents diacrítics en català, amb paginació numèrica inferior, targetes duals (amb accent / sense accent) i ressaltat intel·ligent d'exemples.
+- **Primaria/Llengua/DiftongsHiats/**: Aplicació interactiva per a l'aprenentatge i pràctica dels diftongs (creixents i decreixents) i els hiats, així com exercicis interactius de classificació i separació sil·làbica. Està composta per `diftongshiat.py`, `grafics_diftongshiat.py` i `diccionaridiftongshiat.py`.
 - **Primaria/Llengua/DUC/**: Aplicació del DUC (Regla mnemotècnica i descomposició de nombres en català), composta per `DUC.py` i `grafics_DUC.py`.
 - **Primaria/Matematiques/ConcepteUDC/**: Visualització de blocs base 10 per entendre centenes, desenes i unitats.
 - **Primaria/Matematiques/Restes/**: Aplicació interactiva de la resta amb portades (mètode de compensació).
@@ -27,12 +30,16 @@ Abans de començar, necessites tenir instal·lat **Python** al teu ordinador.
 
 ### 1. Instal·lació de Python
 
-#### 🪟 Windows:
+#### 🪟 Windows Installation
+
 1. Ves a la web oficial de [Python](https://www.python.org/downloads/) i descarrega l'última versió recomanada.
+
 2. Durant la instal·lació, **marca obligatòriament la casella** *"Add Python to PATH"* abans de clicar a *Install Now*.
 
-#### 🍎 macOS:
+#### 🍎 macOS Installation
+
 1. macOS sol venir amb una versió de Python o bé es pot instal·lar des del web oficial o mitjançant [Homebrew](https://brew.sh/):
+
    ```bash
    brew install python
    ```
@@ -43,12 +50,14 @@ Abans de començar, necessites tenir instal·lat **Python** al teu ordinador.
 
 Un cop tinguis Python instal·lat, obre la teva terminal (Terminal a macOS o Command Prompt / PowerShell a Windows) i instal·la Pygame executant:
 
-#### 🪟 Windows:
+#### 🪟 Windows
+
 ```cmd
 pip install pygame
 ```
 
-#### 🍎 macOS:
+#### 🍎 macOS
+
 ```bash
 pip3 install pygame
 ```
@@ -59,43 +68,57 @@ pip3 install pygame
 
 Per executar qualsevol de les aplicacions, situa't amb la terminal dins de la carpeta corresponent i llança l'arxiu principal:
 
-### 🔹 Lectoescriptura (Infantil):
+### 🔹 Lectoescriptura (Infantil)
+
 ```bash
 cd Infantil/Lectoescriptura
 python3 nombreslletres.py
 ```
 
-### 🔹 Accents Diacrítics en Català:
+### 🔹 Diftongs i Hiats
+
+```bash
+cd Primaria/Llengua/DiftongsHiats
+python3 diftongshiat.py
+```
+
+### 🔹 Accents Diacrítics en Català
+
 ```bash
 cd Primaria/Llengua/Accentuacio/Diacritica
 python3 grafics_diacritics.py
 ```
 
-### 🔹 Accentuació en Català:
+### 🔹 Accentuació en Català
+
 ```bash
 cd Primaria/Llengua/Accentuacio
 python3 grafics_accentuacio.py
 ```
 
-### 🔹 DUC de Llengua:
+### 🔹 DUC de Llengua
+
 ```bash
 cd Primaria/Llengua/DUC
 python3 grafics_DUC.py
 ```
 
-### 🔹 Suma amb Portades:
+### 🔹 Suma amb Portades
+
 ```bash
 cd Primaria/Matematiques/Sumes
 python3 grafics_sumes.py
 ```
 
-### 🔹 Resta amb Portades:
+### 🔹 Resta amb Portades
+
 ```bash
 cd Primaria/Matematiques/Restes
 python3 grafics_restes.py
 ```
 
-### 🔹 Concepte UDC:
+### 🔹 Concepte UDC
+
 ```bash
 cd Primaria/Matematiques/ConcepteUDC
 python3 grafics_concepteUDC2.py
@@ -114,10 +137,13 @@ Si vols convertir qualsevol d'aquests programes en un fitxer executable independ
 Instal·la PyInstaller al teu sistema:
 
 - **Windows:**
+
   ```cmd
   pip install pyinstaller
   ```
+  
 - **macOS:**
+
   ```bash
   pip3 install pyinstaller
   ```
@@ -126,10 +152,10 @@ Instal·la PyInstaller al teu sistema:
 
 ### 2. Crear l'executable
 
-Situa't a la carpeta de l'aplicació que vulguis empaquetar (per exemple, a `Infantil/Lectoescriptura`) i executa la comanda següent:
+Situa't a la carpeta de l'aplicació que vulguis empaquetar (per exemple, a `Primaria/Llengua/DiftongsHiats`) i executa la comanda següent:
 
 ```bash
-pyinstaller --noconsole --onefile nombreslletres.py
+pyinstaller --noconsole --onefile diftongshiat.py
 ```
 
 > **Nota:** L'opció `--noconsole` s'utilitza perquè s'obri directament la interfície gràfica de Pygame sense mostrar la finestra negra de fons de la terminal, i `--onefile` crea un sol fitxer executable.
@@ -139,5 +165,6 @@ pyinstaller --noconsole --onefile nombreslletres.py
 ### 3. On trobar l'executable generat?
 
 Un cop finalitzi el procés de compilació, veuràs que s'ha creat una nova carpeta anomenada **`dist`** dins del directori on et trobis:
-- **En Windows:** Trobaràs un arxiu `nombreslletres.exe`.
-- **En macOS:** Trobaràs una aplicació autònoma `nombreslletres.app` (o executable d'Unix).
+
+- **En Windows:** Trobaràs un arxiu `diftongshiat.exe`.
+- **En macOS:** Trobaràs una aplicació autònoma `diftongshiat.app` (o executable d'Unix).
