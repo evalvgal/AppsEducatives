@@ -1,6 +1,6 @@
 # 🧮 Apps Educatives de Matemàtiques i Llengua
 
-Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, i la lectoescriptura pas a pas.
+Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, la lectoescriptura i el dibuix animat interactiu.
 
 ---
 
@@ -10,6 +10,7 @@ El projecte està organitzat per etapes educatives sota una arquitectura Model-V
 
 ### 🧸 Educació Infantil
 
+- **Infantil/Dibuix/**: Aplicació interactiva de dibuix lliure i animació procedimental intel·ligent. Classifica automàticament els traços dels infants (onades del mar, personatges caminant amb rebot i pas sincronitzat de braços i cames, mans que saluden amb els dits, o objectes saltant) i els dóna vida amb partícules. Està composta per `dibuix.py` i `grafics_dibuix.py`.
 - **Infantil/Lectoescriptura/**: Aplicació interactiva per a pissarra digital orientada a infantil per aprendre a escriure lletres (majúscules i minúscules) i nombres (0 al 9) amb animació de traços guiats i resseguit tàctil. Està composta per `grafics_nombreslletres.py` i `nombreslletres.py`.
 
 ### 🎒 Educació Primària
@@ -67,6 +68,13 @@ pip3 install pygame
 ## ▶️ Com executar les aplicacions
 
 Per executar qualsevol de les aplicacions, situa't amb la terminal dins de la carpeta corresponent i llança l'arxiu principal:
+
+### 🔹 Dibuix Animat Màgic (Infantil)
+
+```bash
+cd Infantil/Dibuix
+python3 grafics_dibuix.py
+```
 
 ### 🔹 Lectoescriptura (Infantil)
 
@@ -152,10 +160,10 @@ Instal·la PyInstaller al teu sistema:
 
 ### 2. Crear l'executable
 
-Situa't a la carpeta de l'aplicació que vulguis empaquetar (per exemple, a `Primaria/Llengua/DiftongsHiats`) i executa la comanda següent:
+Situa't a la carpeta de l'aplicació que vulguis empaquetar (per exemple, a `Infantil/Dibuix`) i executa la comanda següent:
 
 ```bash
-pyinstaller --noconsole --onefile diftongshiat.py
+pyinstaller --noconsole --onefile grafics_dibuix.py
 ```
 
 > **Nota:** L'opció `--noconsole` s'utilitza perquè s'obri directament la interfície gràfica de Pygame sense mostrar la finestra negra de fons de la terminal, i `--onefile` crea un sol fitxer executable.
@@ -166,5 +174,7 @@ pyinstaller --noconsole --onefile diftongshiat.py
 
 Un cop finalitzi el procés de compilació, veuràs que s'ha creat una nova carpeta anomenada **`dist`** dins del directori on et trobis:
 
-- **En Windows:** Trobaràs un arxiu `diftongshiat.exe`.
-- **En macOS:** Trobaràs una aplicació autònoma `diftongshiat.app` (o executable d'Unix).
+- **En Windows:** Trobaràs un arxiu `grafics_dibuix.exe`.
+- **En macOS:** Trobaràs una aplicació autònoma `grafics_dibuix.app` (o executable d'Unix).
+
+> **Nota:** Si vols crear executables per altres aplicacions del projecte, simplement substitueix `grafics_dibuix.py` pel nom del fitxer corresponent en les comandes anteriors.
