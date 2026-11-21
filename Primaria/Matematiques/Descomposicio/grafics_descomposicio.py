@@ -4,7 +4,6 @@ Gestiona la detecció de resolució a pantalla completa, el dibuix de les
 pantalles de menú, teoria (nombres primers i exemple amb ratlla vertical)
 i exercicis resolts pas a pas.
 """
-
 import pygame
 
 
@@ -61,7 +60,7 @@ class VistaDescomposicio:
             self.font_mitjana = pygame.font.SysFont("Arial", m_mitjana, bold=True)
             self.font_text = pygame.font.SysFont("Arial", m_text)
             self.font_text_negreta = pygame.font.SysFont("Arial", m_text, bold=True)
-            self.font_petita = pygame.font.SysFont("Arial", m_petita)
+            self.font_petita = pygame.font.SysFont("Arial", m_petita, bold=True)
             self.font_gran = pygame.font.SysFont("Arial", m_gran, bold=True)
         except Exception:
             self.font_titol = pygame.font.Font(None, m_titol + 6)
@@ -136,7 +135,14 @@ class VistaDescomposicio:
 
         if te_enrere:
             r_enrere = pygame.Rect(40, y_peu, 220, 52)
-            self._dibuixar_boto(r_enrere, text_enrere, self.GRIS_BOTO, self.GRIS_HOVER, font=self.font_text_negreta, color_text=self.TEXT)
+            self._dibuixar_boto(
+                r_enrere,
+                text_enrere,
+                self.GRIS_BOTO,
+                self.GRIS_HOVER,
+                font=self.font_text_negreta,
+                color_text=self.TEXT,
+            )
             rects["enrere"] = r_enrere
 
         if botons_extra:
@@ -175,6 +181,38 @@ class VistaDescomposicio:
 
         return y_act
 
+    def _dibuixar_expressio_amb_exponents(self, termes, font_base, color, x, y, prefix=""):
+        """
+        Dibuixa una expressió amb potències (p. ex. 'Forma abreujada amb potències: 96 = 2⁵ · 3')
+        renderitzant l'exponent amb una font més petita i elevada a dalt a la dreta de la base.
+        Retorna la coordenada Y de la línia següent.
+        """
+        font_exp = self.font_petita
+        x_act = x
+
+        if prefix:
+            surf_pref = font_base.render(prefix, True, color)
+            self.pantalla.blit(surf_pref, (x_act, y))
+            x_act += surf_pref.get_width()
+
+        for idx, (base_str, exp_str) in enumerate(termes):
+            if idx > 0:
+                surf_sep = font_base.render(" · ", True, color)
+                self.pantalla.blit(surf_sep, (x_act, y))
+                x_act += surf_sep.get_width()
+
+            surf_base = font_base.render(base_str, True, color)
+            self.pantalla.blit(surf_base, (x_act, y))
+            x_act += surf_base.get_width()
+
+            if exp_str:
+                surf_exp = font_exp.render(exp_str, True, color)
+                y_exp = y - max(2, surf_exp.get_height() // 4)
+                self.pantalla.blit(surf_exp, (x_act + 1, y_exp))
+                x_act += surf_exp.get_width() + 2
+
+        return y + font_base.get_linesize() + 6
+
     def _dibuixar_taula_descomposicio(self, numero, passos_visibles, x_centre, y_inici, alcada_maxima, pas_actiu_index=None):
         """
         Dibuixa la descomposició clàssica amb la ratlla vertical:
@@ -195,32 +233,31 @@ class VistaDescomposicio:
         y_top = y_inici
         y_bottom = y_top + files_necessaries * alt_fila
 
+        # Fons ressaltat del pas actiu (dibuixat abans dels textos)
+        if pas_actiu_index is not None and 0 <= pas_actiu_index < len(passos_visibles):
+            y_fila_act = y_top + pas_actiu_index * alt_fila
+            resaltat = pygame.Rect(x_esquerra - 10, y_fila_act + 2, ample_col * 2 + 20, alt_fila - 4)
+            pygame.draw.rect(self.pantalla, (232, 248, 245), resaltat, border_radius=6)
+
         # Ratlla vertical central
         pygame.draw.line(self.pantalla, self.TEXT, (x_centre, y_top), (x_centre, y_bottom), 3)
 
-        # Primera fila: nombre inicial
-        surf_num = self.font_text_negreta.render(str(numero), True, self.TEXT)
-        self.pantalla.blit(surf_num, surf_num.get_rect(midright=(x_centre - 18, y_top + alt_fila // 2)))
+        # Llista completa de valors de la columna esquerra: [nombre_inicial, quocient_1, ..., 1]
+        valors_esquerra = [numero] + [pas[2] for pas in passos_visibles]
+        for fila_idx, val in enumerate(valors_esquerra):
+            y_centre_fila = y_top + fila_idx * alt_fila + alt_fila // 2
+            es_quocient_ultim_pas = (pas_actiu_index is not None and fila_idx == pas_actiu_index + 1)
+            color_esq = self.BLAU if es_quocient_ultim_pas else self.TEXT
+            surf_esq = self.font_text_negreta.render(str(val), True, color_esq)
+            self.pantalla.blit(surf_esq, surf_esq.get_rect(midright=(x_centre - 18, y_centre_fila)))
 
-        for idx, (_, divisor, nou_quocient) in enumerate(passos_visibles):
-            y_fila = y_top + idx * alt_fila
-            y_centre_fila = y_fila + alt_fila // 2
-
+        # Columna dreta: factors primers en cada pas
+        for idx, (_, divisor, _) in enumerate(passos_visibles):
+            y_centre_fila = y_top + idx * alt_fila + alt_fila // 2
             es_ultim_pas = (pas_actiu_index is not None and idx == pas_actiu_index)
-            if es_ultim_pas:
-                resaltat = pygame.Rect(x_esquerra - 10, y_fila + 2, ample_col * 2 + 20, alt_fila - 4)
-                pygame.draw.rect(self.pantalla, (232, 248, 245), resaltat, border_radius=6)
-
-            # Factor primer a la dreta de la ratlla vertical
             color_factor = self.VERD if es_ultim_pas else self.LILA
             surf_div = self.font_text_negreta.render(str(divisor), True, color_factor)
             self.pantalla.blit(surf_div, surf_div.get_rect(midleft=(x_dreta, y_centre_fila)))
-
-            # Nou quocient a sota a l'esquerra
-            y_seg_centre = y_top + (idx + 1) * alt_fila + alt_fila // 2
-            color_quoc = self.BLAU if es_ultim_pas else self.TEXT
-            surf_quoc = self.font_text_negreta.render(str(nou_quocient), True, color_quoc)
-            self.pantalla.blit(surf_quoc, surf_quoc.get_rect(midright=(x_centre - 18, y_seg_centre)))
 
         return y_bottom
 
@@ -262,7 +299,6 @@ class VistaDescomposicio:
         self.pantalla.blit(surf_sub, (caixa.x + 28, y_act))
         y_act += surf_sub.get_height() + 10
 
-        # Graella compacta per mostrar tots els nombres primers del 1 al 1000
         primers = dades["primers"]
         marge_x = caixa.x + 28
         ample_util = caixa.width - 56
@@ -303,7 +339,6 @@ class VistaDescomposicio:
             interlineat=5,
         )
 
-        # Zona inferior dividida en 2 columnes: exemple amb ratlla vertical i resultat final
         y_div = y_act + 14
         pygame.draw.line(self.pantalla, self.VORA, (caixa.x + 24, y_div), (caixa.right - 24, y_div), 2)
 
@@ -324,7 +359,6 @@ class VistaDescomposicio:
             alcada_maxima=alcada_disponible - 40,
         )
 
-        # Explicació de la descomposició obtinguda a la dreta
         surf_res_tit = self.font_mitjana.render("Resultat de la descomposició:", True, self.VERD)
         self.pantalla.blit(surf_res_tit, (col_dreta_x, y_contingut + 10))
 
@@ -340,19 +374,17 @@ class VistaDescomposicio:
             interlineat=6,
         )
 
-        linia_pot = f"Amb potències: {num_ex} = {dades['exemple_potencies']}"
-        y_d = self._renderitzar_text_ajustat(
-            linia_pot,
+        y_d = self._dibuixar_expressio_amb_exponents(
+            dades["exemple_termes"],
             self.font_text_negreta,
             self.LILA,
             col_dreta_x,
             y_d + 12,
-            ample_dreta,
-            interlineat=6,
+            prefix=f"Amb potències: {num_ex} = ",
         )
 
         nota = "Comprovació: tots els factors de la dreta de la ratlla vertical són nombres primers."
-        self._renderitzar_text_ajustat(nota, self.font_petita, self.TEXT_SUAU, col_dreta_x, y_d + 16, ample_dreta)
+        self._renderitzar_text_ajustat(nota, self.font_petita, self.TEXT_SUAU, col_dreta_x, y_d + 12, ample_dreta)
 
         return self._dibuixar_peu_navegacio(
             te_enrere=True,
@@ -371,7 +403,6 @@ class VistaDescomposicio:
         mostrats = tots_passos[:passos_mostrats]
         completat = passos_mostrats >= len(tots_passos)
 
-        # Pregunta principal
         pregunta = f"Quina és la descomposició del nombre {nombre}?"
         surf_preg = self.font_mitjana.render(pregunta, True, self.TEXT)
         self.pantalla.blit(surf_preg, (caixa.x + 32, caixa.y + 22))
@@ -382,7 +413,6 @@ class VistaDescomposicio:
 
         pygame.draw.line(self.pantalla, self.VORA, (caixa.x + 24, caixa.y + 68), (caixa.right - 24, caixa.y + 68), 2)
 
-        # Columna esquerra: ratlla vertical amb els passos mostrats fins ara
         y_taula_inici = caixa.y + 92
         alcada_taula = caixa.bottom - y_taula_inici - 20
         col_esq_x = caixa.x + int(caixa.width * 0.24)
@@ -399,7 +429,6 @@ class VistaDescomposicio:
             pas_actiu_index=pas_actiu,
         )
 
-        # Columna dreta: explicació del pas actual i solució final en nombres primers
         y_r = caixa.y + 95
         if passos_mostrats == 0:
             indicacio = (
@@ -426,16 +455,15 @@ class VistaDescomposicio:
                     y_r,
                     ample_dreta,
                 )
-                self._renderitzar_text_ajustat(
-                    f"Forma abreujada amb potències: {nombre} = {exercici['potencies']}",
+                self._dibuixar_expressio_amb_exponents(
+                    exercici["termes_potencies"],
                     self.font_text_negreta,
                     self.LILA,
                     col_dreta_x,
                     y_r + 6,
-                    ample_dreta,
+                    prefix=f"Forma abreujada amb potències: {nombre} = ",
                 )
 
-        # 2 botons d'acció principals a la barra inferior: pas a pas i nou exercici
         text_boto_pas = "Completat" if completat else "Següent pas"
         return self._dibuixar_peu_navegacio(
             te_enrere=True,

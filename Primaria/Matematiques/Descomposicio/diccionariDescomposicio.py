@@ -3,7 +3,6 @@ Model de dades i lògica matemàtica per a l'aplicació de Descomposició Factor
 Conté el càlcul de nombres primers fins al 1000, les definicions teòriques,
 l'exemple resolt per a la teoria i el generador d'exercicis aleatoris pas a pas.
 """
-
 import random
 
 
@@ -47,10 +46,13 @@ def calcular_passos_descomposicio(nombre):
     return passos
 
 
-def formatar_expressio_potencies(passos):
-    """Converteix una llista de passos en una cadena del tipus: 2² · 3 · 5"""
+def obtenir_termes_potencies(passos):
+    """
+    Retorna una llista de tuples (base_str, exponent_str_o_None) a partir dels passos.
+    Exemple per a 96: [('2', '5'), ('3', None)]
+    """
     if not passos:
-        return ""
+        return []
 
     exponents = {}
     ordre_factors = []
@@ -60,28 +62,20 @@ def formatar_expressio_potencies(passos):
             ordre_factors.append(factor)
         exponents[factor] += 1
 
-    superindexs = {
-        "0": "⁰",
-        "1": "¹",
-        "2": "²",
-        "3": "³",
-        "4": "⁴",
-        "5": "⁵",
-        "6": "⁶",
-        "7": "⁷",
-        "8": "⁸",
-        "9": "⁹",
-    }
-
-    parts = []
+    termes = []
     for f in ordre_factors:
         exp = exponents[f]
-        if exp == 1:
-            parts.append(str(f))
-        else:
-            exp_str = "".join(superindexs.get(ch, f"^{ch}") for ch in str(exp))
-            parts.append(f"{f}{exp_str}")
+        termes.append((str(f), str(exp) if exp > 1 else None))
 
+    return termes
+
+
+def formatar_expressio_potencies(passos):
+    """Retorna una representació en text llegible del tipus: 2(5) · 3."""
+    termes = obtenir_termes_potencies(passos)
+    if not termes:
+        return ""
+    parts = [f"{base}({exp})" if exp else base for base, exp in termes]
     return " · ".join(parts)
 
 
@@ -99,6 +93,7 @@ TEORIA_PAGINA_1 = {
 }
 
 EXEMPLE_TEORIA_NUMERO = 360
+_PASSOS_EXEMPLE = calcular_passos_descomposicio(EXEMPLE_TEORIA_NUMERO)
 
 TEORIA_PAGINA_2 = {
     "titol": "Descomposició factorial",
@@ -109,9 +104,10 @@ TEORIA_PAGINA_2 = {
         "(2, 3, 5, 7, 11...) fins arribar a 1 a la columna esquerra."
     ),
     "exemple_numero": EXEMPLE_TEORIA_NUMERO,
-    "exemple_passos": calcular_passos_descomposicio(EXEMPLE_TEORIA_NUMERO),
-    "exemple_producte": " · ".join(str(p[1]) for p in calcular_passos_descomposicio(EXEMPLE_TEORIA_NUMERO)),
-    "exemple_potencies": formatar_expressio_potencies(calcular_passos_descomposicio(EXEMPLE_TEORIA_NUMERO)),
+    "exemple_passos": _PASSOS_EXEMPLE,
+    "exemple_producte": " · ".join(str(p[1]) for p in _PASSOS_EXEMPLE),
+    "exemple_potencies": formatar_expressio_potencies(_PASSOS_EXEMPLE),
+    "exemple_termes": obtenir_termes_potencies(_PASSOS_EXEMPLE),
 }
 
 # Nombres recomanats per a primària (variats: parells, múltiples de 3 i 5, i algun amb factor primer més alt)
@@ -133,4 +129,5 @@ def generar_exercici_aleatori(ultim_nombre=None):
         "passos": passos,
         "producte": " · ".join(str(p[1]) for p in passos),
         "potencies": formatar_expressio_potencies(passos),
+        "termes_potencies": obtenir_termes_potencies(passos),
     }

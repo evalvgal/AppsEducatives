@@ -4,7 +4,6 @@ Coordina la màquina d'estats entre el menú principal, les dues pàgines de teo
 i els exercicis resolts pas a pas, així com els esdeveniments de ratolí, tàctils
 i de teclat (ESC per sortir i F11 per alternar pantalla completa).
 """
-
 import sys
 import pygame
 
