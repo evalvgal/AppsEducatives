@@ -60,7 +60,7 @@ class VistaMcmMcd:
             self.font_mitjana = pygame.font.SysFont("Arial", m_mitjana, bold=True)
             self.font_text = pygame.font.SysFont("Arial", m_text)
             self.font_text_negreta = pygame.font.SysFont("Arial", m_text, bold=True)
-            self.font_petita = pygame.font.SysFont("Arial", m_petita)
+            self.font_petita = pygame.font.SysFont("Arial", m_petita, bold=True)
         except Exception:
             self.font_titol = pygame.font.Font(None, m_titol + 6)
             self.font_mitjana = pygame.font.Font(None, m_mitjana + 4)
@@ -169,6 +169,47 @@ class VistaMcmMcd:
 
         return y_act
 
+    def _dibuixar_expressio_amb_exponents(self, termes, font_base, color, x, y, prefix="", sufix=""):
+        """
+        Dibuixa expressions amb potències renderitzant cada exponent amb una font
+        més petita i elevada a dalt a la dreta de la base.
+        Retorna la coordenada Y de la línia següent.
+        """
+        font_exp = self.font_petita
+        x_act = x
+
+        if prefix:
+            surf_pref = font_base.render(prefix, True, color)
+            self.pantalla.blit(surf_pref, (x_act, y))
+            x_act += surf_pref.get_width()
+
+        if not termes:
+            surf_u = font_base.render("1", True, color)
+            self.pantalla.blit(surf_u, (x_act, y))
+            x_act += surf_u.get_width()
+        else:
+            for idx, (base_str, exp_str) in enumerate(termes):
+                if idx > 0:
+                    surf_sep = font_base.render(" · ", True, color)
+                    self.pantalla.blit(surf_sep, (x_act, y))
+                    x_act += surf_sep.get_width()
+
+                surf_base = font_base.render(base_str, True, color)
+                self.pantalla.blit(surf_base, (x_act, y))
+                x_act += surf_base.get_width()
+
+                if exp_str:
+                    surf_exp = font_exp.render(exp_str, True, color)
+                    y_exp = y - max(2, surf_exp.get_height() // 4)
+                    self.pantalla.blit(surf_exp, (x_act + 1, y_exp))
+                    x_act += surf_exp.get_width() + 2
+
+        if sufix:
+            surf_suf = font_base.render(sufix, True, color)
+            self.pantalla.blit(surf_suf, (x_act, y))
+
+        return y + font_base.get_linesize() + 6
+
     def _dibuixar_taula_descomposicio(self, numero, passos_visibles, x_centre, y_inici, alcada_maxima, pas_actiu_index=None):
         """
         Dibuixa la descomposició clàssica amb ratlla vertical:
@@ -189,30 +230,31 @@ class VistaMcmMcd:
         y_top = y_inici
         y_bottom = y_top + files_necessaries * alt_fila
 
+        # Fons ressaltat del pas actiu (dibuixat abans dels textos)
+        if pas_actiu_index is not None and 0 <= pas_actiu_index < len(passos_visibles):
+            y_fila_act = y_top + pas_actiu_index * alt_fila
+            resaltat = pygame.Rect(x_esquerra - 8, y_fila_act + 2, ample_col * 2 + 16, alt_fila - 4)
+            pygame.draw.rect(self.pantalla, (232, 248, 245), resaltat, border_radius=6)
+
         # Ratlla vertical central
         pygame.draw.line(self.pantalla, self.TEXT, (x_centre, y_top), (x_centre, y_bottom), 3)
 
-        # Nombre inicial a dalt a l'esquerra
-        surf_num = self.font_text_negreta.render(str(numero), True, self.TEXT)
-        self.pantalla.blit(surf_num, surf_num.get_rect(midright=(x_centre - 14, y_top + alt_fila // 2)))
+        # Columna esquerra: nombre inicial i quocients obtinguts
+        valors_esquerra = [numero] + [pas[2] for pas in passos_visibles]
+        for fila_idx, val in enumerate(valors_esquerra):
+            y_centre_fila = y_top + fila_idx * alt_fila + alt_fila // 2
+            es_quocient_ultim_pas = pas_actiu_index is not None and fila_idx == pas_actiu_index + 1
+            color_esq = self.BLAU if es_quocient_ultim_pas else self.TEXT
+            surf_esq = self.font_text_negreta.render(str(val), True, color_esq)
+            self.pantalla.blit(surf_esq, surf_esq.get_rect(midright=(x_centre - 14, y_centre_fila)))
 
-        for idx, (_, divisor, nou_quocient) in enumerate(passos_visibles):
-            y_fila = y_top + idx * alt_fila
-            y_centre_fila = y_fila + alt_fila // 2
-
+        # Columna dreta: factors primers en cada pas
+        for idx, (_, divisor, _) in enumerate(passos_visibles):
+            y_centre_fila = y_top + idx * alt_fila + alt_fila // 2
             es_ultim_pas = pas_actiu_index is not None and idx == pas_actiu_index
-            if es_ultim_pas:
-                resaltat = pygame.Rect(x_esquerra - 8, y_fila + 2, ample_col * 2 + 16, alt_fila - 4)
-                pygame.draw.rect(self.pantalla, (232, 248, 245), resaltat, border_radius=6)
-
             color_factor = self.VERD if es_ultim_pas else self.LILA
             surf_div = self.font_text_negreta.render(str(divisor), True, color_factor)
             self.pantalla.blit(surf_div, surf_div.get_rect(midleft=(x_dreta, y_centre_fila)))
-
-            y_seg_centre = y_top + (idx + 1) * alt_fila + alt_fila // 2
-            color_quoc = self.BLAU if es_ultim_pas else self.TEXT
-            surf_quoc = self.font_text_negreta.render(str(nou_quocient), True, color_quoc)
-            self.pantalla.blit(surf_quoc, surf_quoc.get_rect(midright=(x_centre - 14, y_seg_centre)))
 
         return y_bottom
 
@@ -258,13 +300,11 @@ class VistaMcmMcd:
         y_contingut = y_div + 14
         alcada_taula = caixa.bottom - y_contingut - 44
 
-        # 3 zones horitzontals: factorització X | factorització Y | explicació del càlcul
         col1_x = caixa.x + int(caixa.width * 0.14)
         col2_x = caixa.x + int(caixa.width * 0.34)
         col3_x = caixa.x + int(caixa.width * 0.47)
         ample_col3 = caixa.right - col3_x - 28
 
-        # Columna 1: descomposició del primer nombre
         t1 = self.font_text_negreta.render(f"Descomposició de {x_val}", True, self.BLAU)
         self.pantalla.blit(t1, t1.get_rect(center=(col1_x, y_contingut + 12)))
         self._dibuixar_taula_descomposicio(
@@ -275,7 +315,6 @@ class VistaMcmMcd:
             alcada_maxima=alcada_taula,
         )
 
-        # Columna 2: descomposició del segon nombre
         t2 = self.font_text_negreta.render(f"Descomposició de {y_val}", True, self.BLAU)
         self.pantalla.blit(t2, t2.get_rect(center=(col2_x, y_contingut + 12)))
         self._dibuixar_taula_descomposicio(
@@ -286,52 +325,71 @@ class VistaMcmMcd:
             alcada_maxima=alcada_taula,
         )
 
-        # Columna 3: resum de factors i fórmula final
         tit_ex = f"Exemple: calcular el {'m.c.m.' if es_mcm else 'M.C.D.'}({x_val}, {y_val})"
         surf_tit_ex = self.font_mitjana.render(tit_ex, True, self.TARONJA if es_mcm else self.VERD)
         self.pantalla.blit(surf_tit_ex, (col3_x, y_contingut + 6))
 
         y_r = y_contingut + 48
         y_r = self._renderitzar_text_ajustat(
-            f"1. Expressió en factors primers:",
+            "1. Expressió en factors primers:",
             self.font_text_negreta,
             self.TEXT,
             col3_x,
             y_r,
             ample_col3,
         )
-        y_r = self._renderitzar_text_ajustat(
-            f"   • {x_val} = {ex['factors_x_str']}",
-            self.font_text,
+        y_r = self._dibuixar_expressio_amb_exponents(
+            ex["termes_x"],
+            self.font_text_negreta,
             self.LILA,
-            col3_x,
+            col3_x + 12,
             y_r,
-            ample_col3,
+            prefix=f"• {x_val} = ",
         )
-        y_r = self._renderitzar_text_ajustat(
-            f"   • {y_val} = {ex['factors_y_str']}",
-            self.font_text,
+        y_r = self._dibuixar_expressio_amb_exponents(
+            ex["termes_y"],
+            self.font_text_negreta,
             self.LILA,
-            col3_x,
+            col3_x + 12,
             y_r,
-            ample_col3,
+            prefix=f"• {y_val} = ",
         )
 
         y_r += 10
         if es_mcm:
             regla = "2. Prenem els factors comuns i no comuns amb el MAJOR exponent:"
-            linia_final = f"m.c.m.({x_val}, {y_val}) = {ex['mcm_expressio']} = {ex['mcm_valor']}"
-            color_final = self.BLAU
+            y_r = self._renderitzar_text_ajustat(regla, self.font_text_negreta, self.TEXT, col3_x, y_r, ample_col3)
+            self._dibuixar_expressio_amb_exponents(
+                ex["termes_mcm"],
+                self.font_mitjana,
+                self.BLAU,
+                col3_x,
+                y_r + 6,
+                prefix=f"m.c.m.({x_val}, {y_val}) = ",
+                sufix=f" = {ex['mcm_valor']}",
+            )
         else:
             regla = "2. Prenem només els factors comuns amb el MENOR exponent:"
+            y_r = self._renderitzar_text_ajustat(regla, self.font_text_negreta, self.TEXT, col3_x, y_r, ample_col3)
             if ex["te_comuns"]:
-                linia_final = f"M.C.D.({x_val}, {y_val}) = {ex['mcd_expressio']} = {ex['mcd_valor']}"
+                self._dibuixar_expressio_amb_exponents(
+                    ex["termes_mcd"],
+                    self.font_mitjana,
+                    self.VERD,
+                    col3_x,
+                    y_r + 6,
+                    prefix=f"M.C.D.({x_val}, {y_val}) = ",
+                    sufix=f" = {ex['mcd_valor']}",
+                )
             else:
-                linia_final = f"M.C.D.({x_val}, {y_val}) = 1 (no hi ha factors comuns)"
-            color_final = self.VERD
-
-        y_r = self._renderitzar_text_ajustat(regla, self.font_text_negreta, self.TEXT, col3_x, y_r, ample_col3)
-        self._renderitzar_text_ajustat(linia_final, self.font_mitjana, color_final, col3_x, y_r + 6, ample_col3)
+                self._renderitzar_text_ajustat(
+                    f"M.C.D.({x_val}, {y_val}) = 1 (no hi ha factors comuns)",
+                    self.font_mitjana,
+                    self.VERD,
+                    col3_x,
+                    y_r + 6,
+                    ample_col3,
+                )
 
     def dibuixar_teoria_pagina_1(self, dades):
         self._dibuixar_pagina_teoria_comuna(dades, num_pagina=1, es_mcm=True)
@@ -348,13 +406,6 @@ class VistaMcmMcd:
         )
 
     def dibuixar_exercicis(self, exercici, etapa_actual):
-        """
-        Dibuixa la resolució progressiva:
-        - Etapes 1..len(passos_x): descomposició del primer nombre (x)
-        - Etapes següents..len(passos_x)+len(passos_y): descomposició del segon nombre (y)
-        - Etapa +1: expressió en factors primers de x i y
-        - Etapa +2: resultat final m.c.m.(x, y) i M.C.D.(x, y)
-        """
         self._pintar_capcalera("Exercicis resolts: m.c.m. i M.C.D.")
 
         caixa = pygame.Rect(40, 86, self.amplada - 80, self.alcada - 176)
@@ -371,7 +422,6 @@ class VistaMcmMcd:
         total_etapes = nx + ny + 2
         completat = etapa_actual >= total_etapes
 
-        # Pregunta de l'exercici
         pregunta = f"Quin és el mínim comú múltiple i màxim comú divisor entre {x_val} i {y_val}?"
         self._renderitzar_text_ajustat(pregunta, self.font_mitjana, self.TEXT, caixa.x + 28, caixa.y + 18, caixa.width - 210)
 
@@ -382,7 +432,6 @@ class VistaMcmMcd:
         y_linia = caixa.y + 72
         pygame.draw.line(self.pantalla, self.VORA, (caixa.x + 24, y_linia), (caixa.right - 24, y_linia), 2)
 
-        # Càlcul dels passos visibles a cada taula
         mostrats_x = min(etapa_actual, nx)
         mostrats_y = max(0, min(etapa_actual - nx, ny))
 
@@ -397,7 +446,6 @@ class VistaMcmMcd:
         col3_x = caixa.x + int(caixa.width * 0.46)
         ample_col3 = caixa.right - col3_x - 28
 
-        # Taula del primer nombre (x)
         t1 = self.font_text_negreta.render(f"Nombre {x_val}", True, self.BLAU)
         self.pantalla.blit(t1, t1.get_rect(center=(col1_x, y_contingut + 12)))
         self._dibuixar_taula_descomposicio(
@@ -409,7 +457,6 @@ class VistaMcmMcd:
             pas_actiu_index=pas_actiu_x,
         )
 
-        # Taula del segon nombre (y)
         t2 = self.font_text_negreta.render(f"Nombre {y_val}", True, self.BLAU)
         self.pantalla.blit(t2, t2.get_rect(center=(col2_x, y_contingut + 12)))
         self._dibuixar_taula_descomposicio(
@@ -421,7 +468,6 @@ class VistaMcmMcd:
             pas_actiu_index=pas_actiu_y,
         )
 
-        # Panell dret amb la guia pas a pas i resultats
         y_r = y_contingut + 8
         if etapa_actual == 0:
             indicacio = (
@@ -440,41 +486,58 @@ class VistaMcmMcd:
             msg = f"Descomposant {y_val}: dividim {divid} entre {divis} i obtenim {quoc}."
             self._renderitzar_text_ajustat(msg, self.font_text_negreta, self.TEXT, col3_x, y_r, ample_col3)
 
-        # Etapa +1 o superior: mostrar descomposició amb nombres primers de x i y
         if etapa_actual >= nx + ny + 1:
             y_r = y_contingut + 44 if etapa_actual == nx + ny + 1 else y_contingut + 8
             surf_f = self.font_text_negreta.render("Descomposició en factors primers:", True, self.TEXT)
             self.pantalla.blit(surf_f, (col3_x, y_r))
             y_r += surf_f.get_height() + 6
 
-            y_r = self._renderitzar_text_ajustat(
-                f"• {x_val} = {exercici['factors_x_str']}",
+            y_r = self._dibuixar_expressio_amb_exponents(
+                exercici["termes_x"],
                 self.font_text_negreta,
                 self.LILA,
                 col3_x,
                 y_r,
-                ample_col3,
+                prefix=f"• {x_val} = ",
             )
-            y_r = self._renderitzar_text_ajustat(
-                f"• {y_val} = {exercici['factors_y_str']}",
+            y_r = self._dibuixar_expressio_amb_exponents(
+                exercici["termes_y"],
                 self.font_text_negreta,
                 self.LILA,
                 col3_x,
                 y_r,
-                ample_col3,
+                prefix=f"• {y_val} = ",
             )
 
-        # Etapa final: mostrar m.c.m.(x, y) i M.C.D.(x, y)
         if etapa_actual >= total_etapes:
             y_r += 12
-            mcm_txt = f"m.c.m. ({x_val}, {y_val}) = {exercici['mcm_expressio']} = {exercici['mcm_valor']}"
-            y_r = self._renderitzar_text_ajustat(mcm_txt, self.font_mitjana, self.BLAU, col3_x, y_r, ample_col3)
+            if exercici["termes_mcm"]:
+                y_r = self._dibuixar_expressio_amb_exponents(
+                    exercici["termes_mcm"],
+                    self.font_mitjana,
+                    self.BLAU,
+                    col3_x,
+                    y_r,
+                    prefix=f"m.c.m. ({x_val}, {y_val}) = ",
+                    sufix=f" = {exercici['mcm_valor']}",
+                )
+            else:
+                mcm_txt = f"m.c.m. ({x_val}, {y_val}) = {exercici['mcm_valor']}"
+                y_r = self._renderitzar_text_ajustat(mcm_txt, self.font_mitjana, self.BLAU, col3_x, y_r, ample_col3)
 
             if exercici["te_comuns"]:
-                mcd_txt = f"M.C.D. ({x_val}, {y_val}) = {exercici['mcd_expressio']} = {exercici['mcd_valor']}"
+                self._dibuixar_expressio_amb_exponents(
+                    exercici["termes_mcd"],
+                    self.font_mitjana,
+                    self.VERD,
+                    col3_x,
+                    y_r + 6,
+                    prefix=f"M.C.D. ({x_val}, {y_val}) = ",
+                    sufix=f" = {exercici['mcd_valor']}",
+                )
             else:
                 mcd_txt = f"M.C.D. ({x_val}, {y_val}) = 1"
-            self._renderitzar_text_ajustat(mcd_txt, self.font_mitjana, self.VERD, col3_x, y_r + 6, ample_col3)
+                self._renderitzar_text_ajustat(mcd_txt, self.font_mitjana, self.VERD, col3_x, y_r + 6, ample_col3)
 
         text_boto_pas = "Completat" if completat else "Següent pas"
         return self._dibuixar_peu_navegacio(

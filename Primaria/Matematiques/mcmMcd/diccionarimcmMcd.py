@@ -9,28 +9,6 @@ import math
 import random
 
 
-SUPERINDEXS = {
-    "0": "⁰",
-    "1": "¹",
-    "2": "²",
-    "3": "³",
-    "4": "⁴",
-    "5": "⁵",
-    "6": "⁶",
-    "7": "⁷",
-    "8": "⁸",
-    "9": "⁹",
-}
-
-
-def formatar_potencia(base, exponent):
-    """Formata una base i exponent com '2³' (si exponent == 1, retorna '2')."""
-    if exponent == 1:
-        return str(base)
-    exp_str = "".join(SUPERINDEXS.get(ch, f"^{ch}") for ch in str(exponent))
-    return f"{base}{exp_str}"
-
-
 def calcular_passos_descomposicio(nombre):
     """
     Calcula la descomposició pas a pas d'un nombre en factors primers.
@@ -61,22 +39,33 @@ def obtenir_diccionari_factors(passos):
     return factors
 
 
-def formatar_producte_potencies(factors_dict):
-    """Converteix {2: 3, 3: 1} en '2³ · 3' ordenat per factor primer."""
+def obtenir_termes_potencies(factors_dict):
+    """
+    Converteix {2: 4, 3: 1} en [('2', '4'), ('3', None)] per renderitzar
+    els exponents en mida petita i elevada sense caràcters Unicode defectuosos.
+    """
     if not factors_dict:
+        return []
+    return [
+        (str(base), str(factors_dict[base]) if factors_dict[base] > 1 else None)
+        for base in sorted(factors_dict.keys())
+    ]
+
+
+def formatar_producte_potencies(factors_dict):
+    """Retorna una representació en text llegible del tipus: 2(4) · 3."""
+    termes = obtenir_termes_potencies(factors_dict)
+    if not termes:
         return "1"
-    parts = [formatar_potencia(base, factors_dict[base]) for base in sorted(factors_dict.keys())]
-    return " · ".join(parts)
+    return " · ".join(f"{base}({exp})" if exp else base for base, exp in termes)
 
 
 def analitzar_parella(x, y):
     """
     Analitza dos nombres x i y per obtenir:
     - Els passos de descomposició de x i de y
-    - L'expressió en factors primers de x i de y
-    - El detall dels factors escollits per al m.c.m. (comuns i no comuns amb major exponent)
-    - El detall dels factors escollits per al M.C.D. (comuns amb menor exponent)
-    - Els valors finals de m.c.m.(x, y) i M.C.D.(x, y)
+    - L'expressió i els termes de potències de x i de y
+    - Els termes i valors finals de m.c.m.(x, y) i M.C.D.(x, y)
     """
     passos_x = calcular_passos_descomposicio(x)
     passos_y = calcular_passos_descomposicio(y)
@@ -88,20 +77,12 @@ def analitzar_parella(x, y):
     comuns = sorted(set(factors_x.keys()) & set(factors_y.keys()))
 
     # Càlcul del m.c.m.: comuns i no comuns amb el major exponent
-    factors_mcm = {}
-    for f in tots_factors:
-        factors_mcm[f] = max(factors_x.get(f, 0), factors_y.get(f, 0))
-
+    factors_mcm = {f: max(factors_x.get(f, 0), factors_y.get(f, 0)) for f in tots_factors}
     valor_mcm = math.lcm(x, y)
-    expressio_mcm = formatar_producte_potencies(factors_mcm)
 
     # Càlcul del M.C.D.: només comuns amb el menor exponent
-    factors_mcd = {}
-    for f in comuns:
-        factors_mcd[f] = min(factors_x[f], factors_y[f])
-
+    factors_mcd = {f: min(factors_x[f], factors_y[f]) for f in comuns}
     valor_mcd = math.gcd(x, y)
-    expressio_mcd = formatar_producte_potencies(factors_mcd) if factors_mcd else "1 (no tenen factors primers comuns)"
 
     return {
         "x": x,
@@ -110,10 +91,14 @@ def analitzar_parella(x, y):
         "passos_y": passos_y,
         "factors_x_str": formatar_producte_potencies(factors_x),
         "factors_y_str": formatar_producte_potencies(factors_y),
+        "termes_x": obtenir_termes_potencies(factors_x),
+        "termes_y": obtenir_termes_potencies(factors_y),
         "mcm_valor": valor_mcm,
-        "mcm_expressio": expressio_mcm,
+        "mcm_expressio": formatar_producte_potencies(factors_mcm),
+        "termes_mcm": obtenir_termes_potencies(factors_mcm),
         "mcd_valor": valor_mcd,
-        "mcd_expressio": expressio_mcd,
+        "mcd_expressio": formatar_producte_potencies(factors_mcd) if factors_mcd else "1",
+        "termes_mcd": obtenir_termes_potencies(factors_mcd),
         "te_comuns": len(comuns) > 0,
     }
 
@@ -146,7 +131,7 @@ TEORIA_PAGINA_2 = {
     "exemple": EXEMPLE_MCD_DADES,
 }
 
-# Parella de nombres adients per a Educació Primària
+# Parelles de nombres adients per a Educació Primària
 PARELLES_EXERCICIS = [
     (12, 18), (15, 20), (16, 24), (18, 24), (20, 30),
     (24, 36), (28, 42), (30, 45), (32, 48), (36, 48),
