@@ -1,6 +1,6 @@
 # 🧮 Apps Educatives de Matemàtiques i Llengua
 
-Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, la descomposició factorial en nombres primers, les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, la lectoescriptura i el dibuix animat interactiu.
+Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes i restes amb portades, la descomposició factorial en nombres primers, el càlcul del mínim comú múltiple (m.c.m.) i màxim comú divisor (M.C.D.), les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, la lectoescriptura i el dibuix animat interactiu.
 
 ---
 
@@ -21,6 +21,7 @@ El projecte està organitzat per etapes educatives sota una arquitectura Model-V
 - **Primaria/Llengua/DUC/**: Aplicació del DUC (Regla mnemotècnica i descomposició de nombres en català), composta per `DUC.py` i `grafics_DUC.py`.
 - **Primaria/Matematiques/ConcepteUDC/**: Visualització de blocs base 10 per entendre centenes, desenes i unitats.
 - **Primaria/Matematiques/Descomposicio/**: Aplicació interactiva sota el patró MVC per aprendre els nombres primers del 1 al 1000 i practicar la descomposició factorial pas a pas amb el mètode clàssic de la ratlla vertical. Està composta per `descomposicio.py`, `grafics_descomposicio.py` i `diccionariDescomposicio.py`.
+- **Primaria/Matematiques/mcmMcd/**: Aplicació interactiva sota el patró MVC per aprendre i practicar el càlcul del mínim comú múltiple (m.c.m.) i el màxim comú divisor (M.C.D.) pas a pas mitjançant la descomposició en factors primers amb ratlla vertical. Està composta per `mcmMcd.py`, `grafics_mcmMcd.py` i `diccionarimcmMcd.py`.
 - **Primaria/Matematiques/Restes/**: Aplicació interactiva de la resta amb portades (mètode de compensació).
 - **Primaria/Matematiques/Sumes/**: Aplicació interactiva de la suma amb portades i animacions.
 
@@ -36,7 +37,7 @@ Abans de començar, necessites tenir instal·lat **Python** al teu ordinador.
 
 1. Ves a la web oficial de [Python](https://www.python.org/downloads/) i descarrega l'última versió recomanada.
 
-2. Durant la instal·lació, **marca obligatòament la casella** *"Add Python to PATH"* abans de clicar a *Install Now*.
+2. Durant la instal·lació, **marca obligatòriament la casella** *"Add Python to PATH"* abans de clicar a *Install Now*.
 
 #### 🍎 macOS Installation
 
@@ -117,6 +118,13 @@ python3 grafics_DUC.py
 ```bash
 cd Primaria/Matematiques/Descomposicio
 python3 descomposicio.py
+```
+
+### 🔹 Mínim Comú Múltiple i Màxim Comú Divisor (m.c.m. i M.C.D.)
+
+```bash
+cd Primaria/Matematiques/mcmMcd
+python3 mcmMcd.py
 ```
 
 ### 🔹 Suma amb Portades
