@@ -1,4 +1,9 @@
-# -*- coding: utf-8 -*-
+"""
+Model de dades i lògica matemàtica per a l'aplicació de Descomposició Factorial.
+Conté el càlcul de nombres primers fins al 1000, les definicions teòriques,
+l'exemple resolt per a la teoria i el generador d'exercicis aleatoris pas a pas.
+"""
+
 import random
 
 

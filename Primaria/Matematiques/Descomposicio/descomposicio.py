@@ -1,4 +1,10 @@
-# -*- coding: utf-8 -*-
+"""
+Controlador principal (MVC) de l'aplicació de Descomposició en Factors Primers.
+Coordina la màquina d'estats entre el menú principal, les dues pàgines de teoria
+i els exercicis resolts pas a pas, així com els esdeveniments de ratolí, tàctils
+i de teclat (ESC per sortir i F11 per alternar pantalla completa).
+"""
+
 import sys
 import pygame
 

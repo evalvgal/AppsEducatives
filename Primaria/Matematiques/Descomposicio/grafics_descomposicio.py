@@ -1,4 +1,10 @@
-# -*- coding: utf-8 -*-
+"""
+Vista gràfica amb Pygame per a l'aplicació de Descomposició Factorial.
+Gestiona la detecció de resolució a pantalla completa, el dibuix de les
+pantalles de menú, teoria (nombres primers i exemple amb ratlla vertical)
+i exercicis resolts pas a pas.
+"""
+
 import pygame
 
 
@@ -231,10 +237,6 @@ class VistaDescomposicio:
 
         self._dibuixar_boto(r_teoria, "1. Teoria (Nombres primers i Descomposició)", self.BLAU, self.BLAU_HOVER)
         self._dibuixar_boto(r_exercicis, "2. Exercicis resolts pas a pas", self.VERD, self.VERD_HOVER)
-
-        peu_txt = "Prem ESC per sortir  ·  Prem F11 per canviar pantalla completa"
-        surf_peu = self.font_petita.render(peu_txt, True, self.TEXT_SUAU)
-        self.pantalla.blit(surf_peu, surf_peu.get_rect(center=(cx, self.alcada - 42)))
 
         return {"teoria": r_teoria, "exercicis": r_exercicis}
 
