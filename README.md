@@ -1,6 +1,6 @@
 # 🧮 Apps Educatives de Matemàtiques i Llengua
 
-Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes, restes i multiplicacions amb portades, la pràctica de divisions pas a pas amb prova, la descomposició factorial en nombres primers, el càlcul del mínim comú múltiple (m.c.m.) i màxim comú divisor (M.C.D.), les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, la lectoescriptura i el dibuix animat interactiu.
+Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes, restes i multiplicacions amb portades, la pràctica de divisions pas a pas amb prova, la suma de fraccions amb mateix i diferent denominador (amb reducció al màxim per M.C.D.), la descomposició factorial en nombres primers, el càlcul del mínim comú múltiple (m.c.m.) i màxim comú divisor (M.C.D.), les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, la lectoescriptura i el dibuix animat interactiu.
 
 ## 📂 Estructura del Projecte
 
@@ -48,6 +48,11 @@ AppsEducatives/
 │       │   ├── grafics_mcmMcd.py
 │       │   └── mcmMcd.py
 │       └── Operacions/
+│           ├── Fraccions/
+│           │   └── Sumes/
+│           │       ├── diccionariSumaFraccio.py
+│           │       ├── grafics_sumaFraccio.py
+│           │       └── sumaFraccio.py
 │           └── Nombres/
 │               ├── Divisions/
 │               │   ├── diccionaridivisio.py
@@ -91,6 +96,8 @@ AppsEducatives/
 * **Primaria/Matematiques/Descomposicio/**: Aplicació interactiva sota el patró MVC per aprendre els nombres primers del 1 al 1000 i practicar la descomposició factorial pas a pas amb el mètode clàssic de la ratlla vertical. Està composta per `descomposicio.py`, `grafics_descomposicio.py` i `diccionariDescomposicio.py`.
 
 * **Primaria/Matematiques/mcmMcd/**: Aplicació interactiva sota el patró MVC per aprendre i practicar el càlcul del mínim comú múltiple (m.c.m.) i el màxim comú divisor (M.C.D.) pas a pas mitjançant la descomposició en factors primers amb ratlla vertical. Està composta per `mcmMcd.py`, `grafics_mcmMcd.py` i `diccionarimcmMcd.py`.
+
+* **Primaria/Matematiques/Operacions/Fraccions/Sumes/**: Aplicació interactiva sota el patró MVC per aprendre pas a pas la suma de dues fraccions amb el mateix denominador (valors de l'1 al 999) i amb denominadors diferents (valors de l'1 al 50, amb descomposició en ratlla vertical per calcular l'm.c.m. i obtenir fraccions equivalents), així com la reducció al màxim de la fracció resultant mitjançant el càlcul del Màxim Comú Divisor (M.C.D.) i la divisió del numerador i denominador. Està composta per `sumaFraccio.py`, `grafics_sumaFraccio.py` i `diccionariSumaFraccio.py`.
 
 * **Primaria/Matematiques/Operacions/Nombres/Divisions/**: Aplicació interactiva sota el patró MVC per practicar divisions amb divisors d'1, 2 i 3 xifres (amb residu i sense residu) pas a pas amb el mètode de la caixa, explicacions detallades i prova de la divisió. Està composta per `divisio.py`, `grafics_divisio.py` i `diccionaridivisio.py`.
 
@@ -194,6 +201,13 @@ python3 descomposicio.py
 ```bash
 cd Primaria/Matematiques/mcmMcd
 python3 mcmMcd.py
+```
+
+### 🔹 Suma de Fraccions i Reducció amb M.C.D
+
+```bash
+cd Primaria/Matematiques/Operacions/Fraccions/Sumes
+python3 sumaFraccio.py
 ```
 
 ### 🔹 Divisions Pas a Pas
