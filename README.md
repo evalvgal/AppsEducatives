@@ -1,6 +1,6 @@
 # 🧮 Apps Educatives de Matemàtiques i Llengua
 
-Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes, restes i multiplicacions amb portades, la pràctica de divisions pas a pas amb prova, la suma de fraccions amb mateix i diferent denominador (amb reducció al màxim per M.C.D.), la descomposició factorial en nombres primers, el càlcul del mínim comú múltiple (m.c.m.) i màxim comú divisor (M.C.D.), les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, la lectoescriptura i el dibuix animat interactiu.
+Col·lecció d'aplicacions educatives interactives desenvolupades amb **Python** i **Pygame** orientades a nens i alumnes d'infantil, primària i secundària per aprendre el concepte de les centenes, desenes i unitats, la resolució visual de sumes, restes i multiplicacions amb portades, la pràctica de divisions pas a pas amb prova, la suma i la resta de fraccions amb mateix i diferent denominador (amb reducció al màxim per M.C.D.), la descomposició factorial en nombres primers, el càlcul del mínim comú múltiple (m.c.m.) i màxim comú divisor (M.C.D.), les regles d'accentuació en català, els accents diacrítics, els diftongs i hiats, la lectoescriptura i el dibuix animat interactiu.
 
 ## 📂 Estructura del Projecte
 
@@ -49,6 +49,10 @@ AppsEducatives/
 │       │   └── mcmMcd.py
 │       └── Operacions/
 │           ├── Fraccions/
+│           │   ├── Restes/
+│           │   │   ├── diccionariRestaFraccio.py
+│           │   │   ├── grafics_restaFraccio.py
+│           │   │   └── restaFraccio.py
 │           │   └── Sumes/
 │           │       ├── diccionariSumaFraccio.py
 │           │       ├── grafics_sumaFraccio.py
@@ -97,6 +101,8 @@ AppsEducatives/
 
 * **Primaria/Matematiques/mcmMcd/**: Aplicació interactiva sota el patró MVC per aprendre i practicar el càlcul del mínim comú múltiple (m.c.m.) i el màxim comú divisor (M.C.D.) pas a pas mitjançant la descomposició en factors primers amb ratlla vertical. Està composta per `mcmMcd.py`, `grafics_mcmMcd.py` i `diccionarimcmMcd.py`.
 
+* **Primaria/Matematiques/Operacions/Fraccions/Restes/**: Aplicació interactiva sota el patró MVC per aprendre pas a pas la resta de dues fraccions (garantint sempre que la segona fracció és menor que la primera) amb el mateix denominador (valors de l'1 al 999) i amb denominadors diferents (valors de l'1 al 50, amb descomposició en ratlla vertical per calcular l'm.c.m. i obtenir fraccions equivalents), així com la reducció al màxim de la fracció resultant mitjançant el càlcul del Màxim Comú Divisor (M.C.D.) i la divisió del numerador i denominador. Està composta per `restaFraccio.py`, `grafics_restaFraccio.py` i `diccionariRestaFraccio.py`.
+
 * **Primaria/Matematiques/Operacions/Fraccions/Sumes/**: Aplicació interactiva sota el patró MVC per aprendre pas a pas la suma de dues fraccions amb el mateix denominador (valors de l'1 al 999) i amb denominadors diferents (valors de l'1 al 50, amb descomposició en ratlla vertical per calcular l'm.c.m. i obtenir fraccions equivalents), així com la reducció al màxim de la fracció resultant mitjançant el càlcul del Màxim Comú Divisor (M.C.D.) i la divisió del numerador i denominador. Està composta per `sumaFraccio.py`, `grafics_sumaFraccio.py` i `diccionariSumaFraccio.py`.
 
 * **Primaria/Matematiques/Operacions/Nombres/Divisions/**: Aplicació interactiva sota el patró MVC per practicar divisions amb divisors d'1, 2 i 3 xifres (amb residu i sense residu) pas a pas amb el mètode de la caixa, explicacions detallades i prova de la divisió. Està composta per `divisio.py`, `grafics_divisio.py` i `diccionaridivisio.py`.
@@ -110,179 +116,3 @@ AppsEducatives/
 ## ⚙️ Requisits del Sistema i Instal·lació
 
 Abans de començar, necessites tenir instal·lat **Python** al teu ordinador.
-
-### 1. Instal·lació de Python
-
-#### 🪟 Windows Installation
-
-1. Ves a la web oficial de [Python](https://www.python.org/downloads/) i descarrega l'última versió recomanada.
-
-2. Durant la instal·lació, **marca obligatòriament la casella** *"Add Python to PATH"* abans de clicar a *Install Now*.
-
-#### 🍎 macOS Installation
-
-1. macOS sol venir amb una versió de Python o bé es pot instal·lar des del web oficial o mitjançant [Homebrew](https://brew.sh/):
-
-   ```bash
-   brew install python
-   ```
-
-### 2. Instal·lació de la llibreria Pygame
-
-Un cop tinguis Python instal·lat, obre la teva terminal (Terminal a macOS o Command Prompt / PowerShell a Windows) i instal·la Pygame executant:
-
-#### 🪟 Windows
-
-```cmd
-pip install pygame
-```
-
-#### 🍎 macOS
-
-```bash
-pip3 install pygame
-```
-
-## ▶️ Com executar les aplicacions
-
-Per executar qualsevol de les aplicacions, situa't amb la terminal dins de la carpeta corresponent i llança l'arxiu principal:
-
-### 🔹 Dibuix Animat Màgic (Infantil)
-
-```bash
-cd Infantil/Dibuix
-python3 grafics_dibuix.py
-```
-
-### 🔹 Lectoescriptura (Infantil)
-
-```bash
-cd Infantil/Lectoescriptura
-python3 nombreslletres.py
-```
-
-### 🔹 Diftongs i Hiats
-
-```bash
-cd Primaria/Llengua/DiftongsHiats
-python3 diftongshiat.py
-```
-
-### 🔹 Accents Diacrítics en Català
-
-```bash
-cd Primaria/Llengua/Accentuacio/Diacritica
-python3 diacritics.py
-```
-
-### 🔹 Accentuació en Català
-
-```bash
-cd Primaria/Llengua/Accentuacio/Paraules
-python3 accentuacio.py
-```
-
-### 🔹 DUC de Llengua
-
-```bash
-cd Primaria/Llengua/DUC
-python3 grafics_DUC.py
-```
-
-### 🔹 Descomposició en Factors Primers
-
-```bash
-cd Primaria/Matematiques/Descomposicio
-python3 descomposicio.py
-```
-
-### 🔹 Mínim Comú Múltiple i Màxim Comú Divisor (m.c.m. i M.C.D.)
-
-```bash
-cd Primaria/Matematiques/mcmMcd
-python3 mcmMcd.py
-```
-
-### 🔹 Suma de Fraccions i Reducció amb M.C.D
-
-```bash
-cd Primaria/Matematiques/Operacions/Fraccions/Sumes
-python3 sumaFraccio.py
-```
-
-### 🔹 Divisions Pas a Pas
-
-```bash
-cd Primaria/Matematiques/Operacions/Nombres/Divisions
-python3 divisio.py
-```
-
-### 🔹 Multiplicacions amb Portades
-
-```bash
-cd Primaria/Matematiques/Operacions/Nombres/Multiplicacions
-python3 multiplicacio.py
-```
-
-### 🔹 Suma amb Portades
-
-```bash
-cd Primaria/Matematiques/Operacions/Nombres/Sumes
-python3 sumes_portades.py
-```
-
-### 🔹 Resta amb Portades
-
-```bash
-cd Primaria/Matematiques/Operacions/Nombres/Restes
-python3 resta_portades.py
-```
-
-### 🔹 Concepte UDC
-
-```bash
-cd Primaria/Matematiques/ConcepteUDC
-python3 grafics_concepteUDC2.py
-```
-
-*(Nota: A Windows, utilitza `python` en comptes de `python3`).*
-
-## 📦 Generació d'Executables (.exe / .app)
-
-Si vols convertir qualsevol d'aquests programes en un fitxer executable independent (perquè s'obri fent doble clic en qualsevol ordinador sense necessitat de tenir Python ni Pygame instal·lats), utilitzarem la llibreria **PyInstaller**.
-
-### 1. Instal·lar PyInstaller
-
-Instal·la PyInstaller al teu sistema:
-
-* **Windows:**
-
-  ```cmd
-  pip install pyinstaller
-  ```
-
-* **macOS:**
-
-  ```bash
-  pip3 install pyinstaller
-  ```
-
-### 2. Crear l'executable
-
-Situa't a la carpeta de l'aplicació que vulguis empaquetar (per exemple, a `Infantil/Dibuix`) i executa la comanda següent:
-
-```bash
-pyinstaller --noconsole --onefile grafics_dibuix.py
-```
-
-> **Nota:** L'opció `--noconsole` s'utilitza perquè s'obri directament la interfície gràfica de Pygame sense mostrar la finestra negra de fons de la terminal, i `--onefile` crea un sol fitxer executable.
-
-### 3. On trobar l'executable generat?
-
-Un cop finalitzi el procés de compilació, veuràs que s'ha creat una nova carpeta anomenada **`dist`** dins del directori on et trobis:
-
-* **En Windows:** Trobaràs un arxiu `grafics_dibuix.exe`.
-
-* **En macOS:** Trobaràs una aplicació autònoma `grafics_dibuix.app` (o executable d'Unix).
-
-> **Nota:** Si vols crear executables per altres aplicacions del projecte, simplement substitueix `grafics_dibuix.py` pel nom del fitxer corresponent en les comandes anteriors.
